@@ -11,11 +11,12 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 | Fitur | Keterangan |
 |---|---|
 | **7 simulasi ujian** | SIMAK UI Magister, PAPs UGM, AcEPT UGM, UPDA ITB, TPA Bappenas, Tes Bakat Skolastik LPDP, ELPT ITB / TOEFL ITP. Versi penuh dan mini (±⅓ durasi). |
-| **Bank soal** | 620 soal tertulis + 277 kosakata, semuanya dengan pembahasan. |
+| **Bank soal** | 970 soal tertulis + 277 kosakata, semuanya dengan pembahasan: 182 mudah, 406 sedang, 241 sulit, 141 sangat sulit. |
+| **Tingkat kesulitan** | Pilih *Campuran (seperti tes asli)*, *Sulit ke atas*, atau *Sangat sulit* di latihan maupun simulasi. Generator juga punya varian sulit: deret bertingkat, sisa pembagian pangkat, campuran larutan, NPV, teka-teki 6 orang, silogisme tiga premis, dan lainnya. |
 | **Variasi otomatis** | Generator untuk deret angka/huruf, aritmetika, operasi, aljabar, soal cerita, geometri, statistika, peluang, perbandingan kuantitatif, silogisme, ingkaran, urutan, figural, dan vocabulary. Kunci dihitung program, jadi soal tidak pernah habis. |
 | **Kunci terkunci** | Kunci jawaban dan pembahasan disimpan terenkode dan baru didekode setelah sesi selesai. |
 | **Rasa ujian asli** | Timer tidak bisa dijeda, bagian terkunci setelah diakhiri, audio listening hanya sekali putar, dan pencatatan "keluar halaman" seperti ujian daring berpengawas. |
-| **Hasil & pembahasan** | Estimasi skor (skala 200–800, AcEPT, TOEFL), analisis per bagian dan per topik, catatan strategi otomatis, LJK berwarna, filter salah/kosong/ragu. |
+| **Hasil & pembahasan** | Skor dihitung dengan aturan tiap tes: TOEFL ITP 310–677 per bagian, PAPs ternorma 500 + 100Z, TPA Bappenas 20–80 per subtes, SIMAK +4/−1/0, TBS LPDP 5 poin per soal (maks 300), AcEPT 0–426. Rumus dan batas akurasinya ditampilkan di halaman hasil. Analisis per bagian, topik, dan tingkat kesulitan; LJK berwarna; filter salah/kosong/ragu. |
 | **Latihan per topik** | Pilih topik, jumlah soal, dan batas waktu. Latihan kilat siap pakai. |
 | **Strategi & rumus cepat** | Teknik verbal, 8 pola deret, rumus soal cerita, tabel logika, strategi menebak +4/−1. |
 | **English Booster** | Rencana 8 minggu, flashcard dengan pengulangan berjarak (Leitner), 25 aturan grammar, listening dengan suara browser, catatan soal salah. |
@@ -23,7 +24,7 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 | **Jalur MBA & Teknik** | Syarat MM FEB UI, MBA/IMBA FEB UGM, MBA/MSM SBM ITB, MTMI ITB, Magister Teknik Industri UI, MeTSi UGM; aturan kelas reguler LPDP; kalkulator selisih skor bahasa Inggris; rencana 12 minggu; soal kuantitatif bisnis & data (BEP, markup vs margin, pertumbuhan, tabel). |
 | **Analisis soal** | Format tiap tes dan perubahannya dari tahun ke tahun, peta topik, jatah waktu per soal, beserta sumbernya. |
 | **Siap untuk Android** | Bisa dipasang ke layar utama (PWA), bisa dibuka tanpa internet (service worker), layar tetap menyala saat ujian, konfirmasi tombol Back, navigasi bawah, tombol besar untuk jari. |
-| **Riwayat & progres** | Grafik skor, akurasi per topik, cadangan data untuk pindah perangkat. |
+| **Riwayat & progres** | Tersimpan otomatis di perangkat (tanpa akun). Grafik skor per simulasi dengan garis target, akurasi mingguan per kemampuan, kalender latihan 12 minggu, akurasi per tingkat kesulitan dan per topik, tabel semua sesi. Cadangan berupa file `.json` yang bisa digabung atau dipulihkan di perangkat lain. |
 
 | Layar ujian | Pembahasan |
 |---|---|
@@ -110,7 +111,11 @@ node tools/build.js
 node tools/test.js
 ```
 
-Edit file di `bank/` atau `content/`, lalu jalankan dua perintah di atas (butuh Node.js 18+, tanpa dependensi). Detail format ada di [CONTRIBUTING.md](CONTRIBUTING.md).
+```bash
+node tools/audit-render.js
+```
+
+Edit file di `bank/` atau `content/`, lalu jalankan perintah di atas (butuh Node.js 18+, tanpa dependensi). Detail format ada di [CONTRIBUTING.md](CONTRIBUTING.md).
 
 > Catatan kejujuran: kunci jawaban di `data/bank.js` terenkode agar tidak terlihat sekilas, tetapi sumber soal di folder `bank/` berupa teks biasa untuk kemudahan kontribusi. Kalau ingin latihan jujur, jangan membuka folder `bank/` sebelum mengerjakan.
 

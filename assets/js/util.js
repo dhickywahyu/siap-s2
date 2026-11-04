@@ -60,6 +60,16 @@
       delete mem[k];
       try { localStorage.removeItem(PFX + k); } catch (e) { /* abaikan */ }
     },
+    /** true bila localStorage bisa dipakai (tidak dalam mode samaran/pratinjau yang memblokir). */
+    durable() {
+      try { const t = PFX + '__t'; localStorage.setItem(t, '1'); localStorage.removeItem(t); return true; } catch (e) { return false; }
+    },
+    /** perkiraan ukuran data aplikasi di localStorage, dalam byte (UTF-16). */
+    size() {
+      let n = 0;
+      try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PFX)) n += k.length + (localStorage.getItem(k) || '').length; } } catch (e) { /* abaikan */ }
+      return n * 2;
+    },
     keys() {
       const out = new Set(Object.keys(mem));
       try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PFX)) out.add(k.slice(PFX.length)); } } catch (e) { /* abaikan */ }
@@ -84,7 +94,9 @@
   // Mendukung **tebal**, *miring*, <u>, <b>, <i>, <br>, <sub>, <sup>, dan [A|teks] untuk written expression.
   const SAFE_TAGS = /&lt;(\/?)(b|i|u|br|sub|sup|em|strong)&gt;/g;
   function rich(s) {
-    let t = esc(s).replace(SAFE_TAGS, '<$1$2>');
+    let t = esc(s).replace(SAFE_TAGS, '<$1$2>')
+      .replace(/&lt;span class=&quot;(seq|figs|fig|fig fig-q)&quot;&gt;/g, '<span class="$1">')
+      .replace(/&lt;\/span&gt;/g, '</span>');
     t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
     t = t.replace(/\[([A-D])\|([^\]]+)\]/g, '<span class="we"><u>$2</u><sub>$1</sub></span>');
     return t.replace(/\n/g, '<br>');

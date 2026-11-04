@@ -32,13 +32,31 @@
 - **Soal tertulis** disusun orisinal mengikuti gaya dan kisi-kisi tes asli, lengkap dengan pembahasan.
 - **Variasi otomatis** untuk deret, aritmetika, soal cerita, peluang, perbandingan kuantitatif, silogisme, ingkaran, urutan, figural, dan vocabulary dibuat oleh generator. Kuncinya dihitung oleh program, jadi soalnya tidak pernah habis.
 - Aplikasi memprioritaskan soal yang paling jarang kamu lihat agar latihan tidak berulang.
-- Skor skala 200–800, AcEPT, dan TOEFL adalah **estimasi**. Gunakan untuk melihat tren, bukan prediksi pasti.
+- Setiap soal punya **tingkat kesulitan**: Mudah, Sedang, Sulit, Sangat sulit. Labelnya terlihat di samping nomor soal dan di pembahasan.
+- Skor simulasi dihitung dengan aturan tiap tes (TOEFL ITP 310–677, PAPs ternorma, SIMAK +4/−1/0, TBS LPDP 5 poin per soal, dan seterusnya). Rincian dan batas akurasinya ada di [Analisis soal](#analisis), bagian "Cara skor dihitung".
 
-## Data dan privasi
+## Memilih tingkat kesulitan
 
-- Semua riwayat, statistik, flashcard, dan catatan tersimpan di browser perangkatmu (localStorage). Tidak ada data yang dikirim ke server.
-- Pindah perangkat: buka Riwayat & progres → Salin cadangan, lalu tempel di perangkat lain.
-- Mode penyamaran (incognito) atau menghapus data situs akan menghapus progres.
+- **Campuran (seperti tes asli):** sebaran mudah sampai sangat sulit. Pakai ini untuk mengukur skor.
+- **Sulit ke atas:** hanya soal Sulit dan Sangat sulit. Mulai pakai setelah akurasi mode campuran stabil di atas 70%.
+- **Sangat sulit:** soal berlapis dengan pengecoh halus. Akurasi 40–50% di mode ini sudah bagus.
+
+Pilihan ini ada di **Latihan per topik** (baris "Tingkat kesulitan") dan di jendela konfirmasi sebelum **Simulasi** dimulai. Latihan kilat bertanda *Sulit+* atau *Sangat sulit* juga langsung memakai soal tingkat tinggi.
+
+## Progres dan riwayat
+
+- Setiap sesi yang selesai otomatis tersimpan di **browser perangkat ini**: skor, persentase benar, rincian per kemampuan, per topik, dan per tingkat kesulitan. Tidak ada data yang dikirim ke server dan tidak perlu akun.
+- Halaman **Riwayat & progres** menampilkan grafik skor per jenis simulasi (dengan garis target), akurasi mingguan per kemampuan, kalender latihan 12 minggu, akurasi per tingkat kesulitan, dan tabel semua sesi.
+- Ringkasan disimpan sampai 500 sesi. Soal, jawaban, dan pembahasan lengkap disimpan untuk 30 sesi terakhir.
+- Tekan **Aktifkan penyimpanan permanen** agar browser tidak menghapus data saat memori HP menipis (paling efektif setelah aplikasi dipasang ke layar utama).
+
+## Cadangan dan pindah perangkat
+
+1. Buka **Riwayat & progres → Unduh file cadangan**. File `.json` tersimpan di folder Unduhan; simpan juga ke Google Drive atau kirim ke diri sendiri.
+2. Di perangkat baru, buka **Riwayat & progres → Pulihkan dari file**, pilih file tadi.
+3. Pilih **Gabungkan** (riwayat kedua perangkat disatukan) atau **Ganti** (perangkat baru disamakan persis dengan cadangan).
+
+Progres akan hilang bila kamu memakai mode penyamaran (incognito), menghapus data situs, atau ganti browser tanpa memulihkan cadangan. Beranda akan mengingatkanmu bila cadangan terakhir sudah lebih dari 14 hari.
 
 ## Memakai di HP Android
 

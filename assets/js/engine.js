@@ -10,13 +10,23 @@
   const LET = 'ABCDE';
   S.bankCount = (sub) => (BY_SUB[sub] || []).length;
   S.bankTotal = ITEMS.length;
+  S.bankLevels = (sub) => {
+    const c = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    (sub ? BY_SUB[sub] || [] : ITEMS).forEach((x) => { c[x.l || 2]++; });
+    return c;
+  };
   S.passage = (id) => (BANK.passages || {})[id];
 
   /* ---------------- pemilihan soal ---------------- */
   let seen = S.store.get('seen', {});
   const seenOf = (id) => seen[id] || 0;
-  function pickBank(sub, n, r, excl) {
-    const pool = (BY_SUB[sub] || []).filter((x) => !excl.has(x.i));
+  function levelPool(pool, minL) {
+    if (minL <= 1) return pool;
+    for (const L of [minL, 3]) { const p = pool.filter((x) => x.l >= L); if (p.length) return p; }
+    return pool;
+  }
+  function pickBank(sub, n, r, excl, minL = 1) {
+    const pool = levelPool((BY_SUB[sub] || []).filter((x) => !excl.has(x.i)), minL);
     if (!pool.length || n <= 0) return [];
     if (pool.some((x) => x.p)) {
       const groups = S.groupBy(pool, 'p');
@@ -39,25 +49,31 @@
     return q;
   };
   const fromGen = (g) => {
-    const q = { id: 'g-' + S.uid(), c: g.c, s: g.s, l: g.l || 2, q: g.q, o: g.o, k: S.enc({ a: g.a, e: g.e || '' }), gen: 1 };
+    // Stem dari generator dibuat oleh kode aplikasi sendiri (tepercaya), jadi dirender sebagai HTML.
+    // Tanda "<" yang bukan awal tag (mis. "x <5") di-escape agar tidak ditafsirkan sebagai HTML.
+    const stem = String(g.q).replace(/<(?!\/?(?:span|b|i|u|br|sub|sup|em|strong|small|table|thead|tbody|tr|th|td|svg|g|path|line|circle|polygon|rect|text)\b)/g, '&lt;');
+    const q = { id: 'g-' + S.uid(), c: g.c, s: g.s, l: g.l || 2, q: stem, o: g.o, k: S.enc({ a: g.a, e: g.e || '' }), gen: 1, qh: 1 };
     ['f', 'h', 'qh'].forEach((f) => { if (g[f]) q[f] = g[f]; });
     return q;
   };
-  function draw(sub, n, r, excl, bankShare = 0.5) {
+  function draw(sub, n, r, excl, bankShare = 0.5, minL = 1) {
     const bank = BY_SUB[sub] || [];
     const gen = S.hasGen(sub);
-    const nb = bank.length ? (gen ? Math.round(n * bankShare) : n) : 0;
-    const out = pickBank(sub, nb, r, excl).map(fromBank);
+    let nb = bank.length ? (gen ? Math.round(n * bankShare) : n) : 0;
+    if (minL > 1 && gen) nb = Math.min(nb, bank.filter((x) => x.l >= Math.min(minL, 3) && !excl.has(x.i)).length);
+    const out = pickBank(sub, nb, r, excl, minL).map(fromBank);
     out.forEach((q) => excl.add(q.id));
     let guard = 0;
-    while (out.length < n && gen && guard++ < n * 4) { const g = S.generate(sub, r); if (g) out.push(fromGen(g)); }
-    if (out.length < n && !gen) {
-      // bank habis: izinkan pengulangan dari bank (jarang terjadi)
-      const more = pickBank(sub, n - out.length, r, new Set(out.map((q) => q.id))).map(fromBank);
+    while (out.length < n && gen && guard++ < n * 4) { const g = S.generate(sub, r, minL); if (g) out.push(fromGen(g)); }
+    if (out.length < n) {
+      // bank habis untuk tingkat ini: lengkapi dari bank tingkat mana pun (jarang terjadi)
+      const more = pickBank(sub, n - out.length, r, new Set([...excl, ...out.map((q) => q.id)]), 1).map(fromBank);
       out.push(...more);
+      if (out.length < n) out.push(...pickBank(sub, n - out.length, r, new Set(out.map((q) => q.id))).map(fromBank));
     }
     return out;
   }
+  const minLevel = (diff) => (S.DIFFS && S.DIFFS[diff] ? S.DIFFS[diff][1] : 1);
 
   /* ---------------- membuat sesi ---------------- */
   function baseSession(o) {
@@ -71,28 +87,30 @@
   S.createExam = function (exam, opts = {}) {
     const r = S.rng(S.newSeed());
     const f = opts.mini ? 0.34 : 1;
+    const diff = opts.diff || 'campuran', minL = minLevel(diff);
     const excl = new Set();
     const q = [], sections = [];
     exam.sections.forEach((sec) => {
       const start = q.length;
-      sec.draw.forEach(([sub, n]) => q.push(...draw(sub, Math.max(1, Math.round(n * f)), r, excl)));
-      sections.push({ name: sec.name, start, end: q.length, secs: Math.max(180, Math.round(sec.min * 60 * f)), sc: sec.scoring || exam.scoring || [1, 0, 0] });
+      sec.draw.forEach(([sub, n]) => q.push(...draw(sub, Math.max(1, Math.round(n * f)), r, excl, 0.5, minL)));
+      sections.push({ name: sec.name, group: sec.group || null, start, end: q.length, secs: Math.max(180, Math.round(sec.min * 60 * f)), sc: sec.scoring || exam.scoring || [1, 0, 0] });
     });
-    const sess = baseSession({ kind: 'sim', examId: exam.id, title: exam.name + (opts.mini ? ' (mini)' : ''), mini: !!opts.mini, timing: exam.timing, sections, q, audioLimit: 1, strict: true });
+    const tag = (opts.mini ? ' (mini)' : '') + (diff !== 'campuran' ? ` · ${diff === 'sangat' ? 'sangat sulit' : 'sulit'}` : '');
+    const sess = baseSession({ kind: 'sim', examId: exam.id, title: exam.name + tag, mini: !!opts.mini, diff, timing: exam.timing, sections, q, audioLimit: 1, strict: true });
     sess.totalSecs = S.sum(sections.map((s) => s.secs));
     startClock(sess);
     return sess;
   };
-  S.createPractice = function ({ title, subs, n, min, questions, timed = true }) {
+  S.createPractice = function ({ title, subs, n, min, questions, timed = true, diff = 'campuran' }) {
     const r = S.rng(S.newSeed());
     let q = questions ? questions.map((x) => Object.assign({}, x)) : [];
     if (!questions) {
       const excl = new Set();
       const per = subs.map((_, i) => Math.floor(n / subs.length) + (i < n % subs.length ? 1 : 0));
-      subs.forEach((s, i) => q.push(...draw(s, per[i], r, excl, 0.6)));
+      subs.forEach((s, i) => q.push(...draw(s, per[i], r, excl, 0.6, minLevel(diff))));
     }
     const secs = timed && min ? Math.round(min * 60) : 0;
-    const sess = baseSession({ kind: 'latihan', title, timing: secs ? 'global' : 'none', sections: [{ name: title, start: 0, end: q.length, secs, sc: [1, 0, 0] }], q, audioLimit: 0, strict: false });
+    const sess = baseSession({ kind: 'latihan', title, diff, timing: secs ? 'global' : 'none', sections: [{ name: title, start: 0, end: q.length, secs, sc: [1, 0, 0] }], q, audioLimit: 0, strict: false });
     sess.totalSecs = secs;
     startClock(sess);
     return sess;
@@ -108,7 +126,46 @@
   const saveActive = (sess) => S.store.set('active', sess);
   S.discardActive = () => S.store.del('active');
   S.loadSession = (id) => S.store.get('sess:' + id, null);
+  const DETAIL_KEEP = 30;
+  S.saveDetail = function (sess, hist) {
+    const ids = hist.map((h) => h.id);
+    ids.slice(DETAIL_KEEP).forEach((id) => S.store.del('sess:' + id));
+    let keep = DETAIL_KEEP;
+    // Jika memori browser penuh, hapus detail sesi tertua sampai muat (ringkasan tetap tersimpan).
+    while (!S.store.set('sess:' + sess.id, sess) && keep > 1) {
+      keep = Math.max(1, keep - 5);
+      ids.slice(keep).forEach((id) => { if (id !== sess.id) S.store.del('sess:' + id); });
+    }
+  };
   S.history = () => S.store.get('hist', []);
+  /** Lengkapi riwayat versi lama (tanpa rincian kategori/tingkat) dari detail sesi yang masih tersimpan. */
+  S.migrateHistory = function () {
+    const hist = S.history();
+    let changed = false;
+    hist.forEach((h) => {
+      if (h.cats && h.lv && h.subs) return;
+      const s = S.loadSession(h.id);
+      if (!s || !s.res || !Array.isArray(s.res.correct) || !Array.isArray(s.q)) return;
+      const by = (key) => {
+        const o = {};
+        s.q.forEach((q, i) => { const k = key(q); const t = (o[k] = o[k] || [0, 0]); t[1]++; if (s.res.correct[i] === true) t[0]++; });
+        return o;
+      };
+      h.subs = h.subs || by((q) => q.s);
+      h.cats = h.cats || by((q) => q.c || S.subCat(q.s));
+      h.lv = h.lv || by((q) => q.l || 2);
+      changed = true;
+    });
+    if (changed) S.store.set('hist', hist);
+  };
+  /** Minta browser menjadikan penyimpanan permanen (tidak dihapus otomatis saat memori perangkat menipis). */
+  S.persistStorage = async function () {
+    try {
+      if (!navigator.storage || !navigator.storage.persist) return null;
+      if (await navigator.storage.persisted()) return true;
+      return await navigator.storage.persist();
+    } catch (e) { return null; }
+  };
 
   /* ---------------- render ujian ---------------- */
   let cur = null, tick = null, saveCounter = 0;
@@ -185,7 +242,8 @@
       <span class="bubble" aria-hidden="true">${LET[i]}</span><span class="opt-text">${label}</span></button>`;
   }
   function stemHtml(q) {
-    return q.qh ? q.q : S.rich(q.q);
+    // q.gen: soal generator dari sesi lama (sebelum ada penanda qh) juga stem tepercaya
+    return q.qh || q.gen ? q.q : S.rich(q.q);
   }
   function audioHtml(q, idx) {
     if (!q.au) return '';
@@ -255,7 +313,7 @@
       <div class="exam-body${pas ? ' has-passage' : ''}">
         ${pas ? `<article class="passage" aria-label="Bacaan"><h3>${S.esc(pas.t)}</h3><div class="passage-text">${S.rich(pas.x)}</div></article>` : ''}
         <section class="qpane" aria-label="Soal">
-          <div class="qmeta"><span class="qno">Soal ${i + 1}</span><span>${S.esc(S.subLabel(q.s))}</span>${q.gen ? '<span class="tag">variasi otomatis</span>' : ''}</div>
+          <div class="qmeta"><span class="qno">Soal ${i + 1}</span><span>${S.esc(S.subLabel(q.s))}</span><span class="lv lv-${q.l || 2}">${S.LEVELS[q.l || 2]}</span>${q.gen ? '<span class="tag">variasi otomatis</span>' : ''}</div>
           ${audioHtml(q, i)}
           <div class="qstem ${q.c === 'english' ? 'en' : ''}">${stemHtml(q)}</div>
           <div class="opts${q.h ? ' opts-fig' : ''}" role="radiogroup" aria-label="Pilihan jawaban">${q.o.map((_, j) => optHtml(q, j, sess.ans[i])).join('')}</div>
@@ -346,30 +404,14 @@
   }
 
   /* ---------------- penilaian ---------------- */
-  function scale(sess, res) {
-    const exam = sess.examId ? S.examById(sess.examId) : null;
-    const kind = exam ? exam.scale : 'pct';
-    const f = res.total ? res.b / res.total : 0;
-    if (kind === 'tpa') return { value: Math.round(200 + 600 * f), unit: '', label: 'Estimasi skor skala 200–800', target: exam.target, min: 200, max: 800 };
-    if (kind === 'acept') return { value: Math.round(426 * f), unit: '', label: 'Estimasi skor AcEPT (skala ±0–426)', target: exam.target, min: 0, max: 426 };
-    if (kind === 'toefl') {
-      const conv = res.sections.map((s, i) => (s.n ? Math.round(31 + (i === 2 ? 36 : 37) * (s.b / s.n)) : 31));
-      return { value: Math.round((S.sum(conv) * 10) / 3), unit: '', label: `Estimasi skor TOEFL ITP (310–677) · L${conv[0]} S${conv[1]} R${conv[2]}`, target: exam.target, min: 310, max: 677 };
-    }
-    if (kind === 'simak') {
-      const tpa = res.sections.filter((s) => s.pen), eng = res.sections.filter((s) => !s.pen);
-      const raw = S.sum(tpa.map((s) => s.raw)), max = S.sum(tpa.map((s) => s.max));
-      const engPct = eng.length ? S.pct(S.sum(eng.map((s) => s.b)), S.sum(eng.map((s) => s.n))) : 0;
-      return { value: max ? Math.round((Math.max(0, raw) / max) * 100) : 0, unit: '%', label: `Skor TPA ${raw} dari ${max} (+4/−1/0) · Bahasa Inggris ${engPct}%`, target: 60, min: 0, max: 100 };
-    }
-    return { value: Math.round(f * 100), unit: '%', label: 'Persentase jawaban benar', target: exam ? exam.target : 70, min: 0, max: 100 };
-  }
+  const scale = (sess, res) => S.scoreSession(sess, res);
+
   function finish() {
     const sess = cur;
     keepAwake(false);
     clearInterval(tick); tick = null;
     S.tts.stop();
-    const res = { sections: [], bySub: {}, correct: [], total: sess.q.length, b: 0, s: 0, k: 0 };
+    const res = { sections: [], bySub: {}, byLevel: {}, byCat: {}, correct: [], total: sess.q.length, b: 0, s: 0, k: 0 };
     sess.sections.forEach((sec) => {
       const st = { name: sec.name, n: sec.end - sec.start, b: 0, s: 0, k: 0, pen: sec.sc[1] < 0, time: 0 };
       for (let i = sec.start; i < sec.end; i++) {
@@ -377,9 +419,11 @@
         const a = sess.ans[i];
         const sub = sess.q[i].s;
         const bs = (res.bySub[sub] = res.bySub[sub] || { n: 0, b: 0, t: 0 });
-        bs.n++; bs.t += sess.spent[i] || 0; st.time += sess.spent[i] || 0;
+        const lv = (res.byLevel[sess.q[i].l || 2] = res.byLevel[sess.q[i].l || 2] || { n: 0, b: 0 });
+        const ct = (res.byCat[sess.q[i].c] = res.byCat[sess.q[i].c] || { n: 0, b: 0 });
+        bs.n++; lv.n++; ct.n++; bs.t += sess.spent[i] || 0; st.time += sess.spent[i] || 0;
         if (a == null) { st.k++; res.correct[i] = null; }
-        else if (a === key) { st.b++; bs.b++; res.correct[i] = true; }
+        else if (a === key) { st.b++; bs.b++; lv.b++; ct.b++; res.correct[i] = true; }
         else { st.s++; res.correct[i] = false; }
       }
       st.raw = st.b * sec.sc[0] + st.s * sec.sc[1] + st.k * sec.sc[2];
@@ -409,12 +453,18 @@
     sess.q.forEach((q) => { if (!q.gen) seen[q.id] = (seen[q.id] || 0) + 1; });
     S.store.set('seen', seen);
 
-    // simpan riwayat (maks 60 sesi lengkap)
-    S.store.set('sess:' + sess.id, sess);
-    const hist = S.history();
-    hist.unshift({ id: sess.id, title: sess.title, examId: sess.examId || null, kind: sess.kind, date: sess.finished, pct: res.pct, scaled: res.scaled, n: res.total, b: res.b, dur: sess.duration, blur: sess.blur });
-    hist.slice(60).forEach((h) => S.store.del('sess:' + h.id));
-    S.store.set('hist', hist.slice(0, 60));
+    // Riwayat: ringkasan kecil disimpan sampai 500 sesi (untuk grafik perkembangan),
+    // detail lengkap (soal + jawaban + pembahasan) untuk 30 sesi terakhir.
+    const pack = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, [v.b, v.n]]));
+    const summary = {
+      id: sess.id, title: sess.title, examId: sess.examId || null, kind: sess.kind, diff: sess.diff || 'campuran', date: sess.finished,
+      pct: res.pct, scaled: { value: res.scaled.value, unit: res.scaled.unit, target: res.scaled.target, min: res.scaled.min, max: res.scaled.max },
+      n: res.total, b: res.b, dur: sess.duration, blur: sess.blur, cats: pack(res.byCat), lv: pack(res.byLevel), subs: pack(res.bySub),
+    };
+    const hist = [summary, ...S.history()].slice(0, 500);
+    if (!S.store.set('hist', hist) && S.store.durable()) S.toast('Memori browser penuh. Unduh cadangan di Riwayat, lalu hapus data lama.', 'warn');
+    S.saveDetail(sess, hist);
+    if (hist.length === 1 || hist.length % 10 === 0) S.persistStorage();
     S.discardActive();
     S.store.set('viewResult', sess.id);
     cur = null;
@@ -451,6 +501,8 @@
           <div class="score-label">${S.esc(sc.label)}</div>
           ${sc.target != null ? `<div class="score-target">${reach ? 'Mencapai' : 'Belum mencapai'} target ${sc.target}${sc.unit}${exam && exam.scale === 'pct' ? ' (margin aman latihan)' : ''}</div>` : ''}
           ${meter(sc)}
+          ${sc.parts && sc.parts.length ? `<dl class="score-parts">${sc.parts.map(([n, v, r]) => `<div><dt>${S.esc(n)}</dt><dd>${S.esc(String(v))}<small>${S.esc(r)}</small></dd></div>`).join('')}</dl>` : ''}
+          ${sc.rule ? `<details class="score-rule"><summary>Cara skor dihitung</summary><p>${S.esc(sc.rule)}</p></details>` : ''}
         </div>
       </header>
 
@@ -466,6 +518,7 @@
           </div>`).join('')}
         </div>
         <div class="legend-inline"><span><i class="lg ok"></i>Benar</span><span><i class="lg bad"></i>Salah</span><span><i class="lg blank"></i>Kosong</span></div>
+        ${res.byLevel ? `<h3 class="sub-h">Per tingkat kesulitan</h3><div class="lv-row">${[1, 2, 3, 4].filter((l) => res.byLevel[l]).map((l) => { const x = res.byLevel[l]; const p = S.pct(x.b, x.n); return `<div class="lv-cell"><span class="lv lv-${l}">${S.LEVELS[l]}</span><strong>${p}%</strong><span class="muted small">${x.b}/${x.n} benar</span></div>`; }).join('')}</div>` : ''}
       </section>
 
       <div class="grid-2">
@@ -546,7 +599,7 @@
       lastP = q.p || null;
       return `${pas ? `<details class="rev-passage"><summary>Bacaan: ${S.esc(pas.t)}</summary><div class="passage-text">${S.rich(pas.x)}</div></details>` : ''}
       <article class="rev ${c === true ? 'ok' : c === false ? 'bad' : 'blank'}" id="rev-${i}">
-        <div class="rev-head"><span class="qno">${i + 1}</span><span class="rev-state">${c === true ? 'Benar' : c === false ? 'Salah' : 'Kosong'}</span><span class="muted small">${S.esc(S.subLabel(q.s))} · ${sess.spent[i] || 0} dtk${sess.flag[i] ? ' · ragu-ragu' : ''}</span></div>
+        <div class="rev-head"><span class="qno">${i + 1}</span><span class="rev-state">${c === true ? 'Benar' : c === false ? 'Salah' : 'Kosong'}</span><span class="lv lv-${q.l || 2}">${S.LEVELS[q.l || 2]}</span><span class="muted small">${S.esc(S.subLabel(q.s))} · ${sess.spent[i] || 0} dtk${sess.flag[i] ? ' · ragu-ragu' : ''}</span></div>
         ${q.au ? `<div class="audio-box">${S.tts.ok ? '<button type="button" class="btn btn-small" data-act="replay" data-i="' + i + '">Putar ulang audio</button>' : ''}${transcript(q)}</div>` : ''}
         <div class="qstem ${q.c === 'english' ? 'en' : ''}">${stemHtml(q)}</div>
         <ul class="rev-opts${q.h ? ' opts-fig' : ''}">${q.o.map((o, j) => `<li class="${j === key.a ? 'key' : ''}${a === j && j !== key.a ? ' wrong' : ''}"><span class="bubble">${LET[j]}</span><span>${q.h ? o : S.rich(o)}</span>${j === key.a ? '<em>kunci</em>' : a === j ? '<em>jawabanmu</em>' : ''}</li>`).join('')}</ul>

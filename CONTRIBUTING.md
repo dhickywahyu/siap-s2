@@ -8,7 +8,8 @@ Terima kasih ingin menambah soal atau memperbaiki konten. Semua soal disimpan di
 2. **Setiap soal wajib punya pembahasan** yang menjelaskan alasan, bukan sekadar menyebut kunci.
 3. **Pastikan hanya ada satu jawaban benar.** Untuk teka-teki penalaran analitis, verifikasi dengan brute force (contoh di `tools/verify-puzzles.py`).
 4. Untuk fakta (sejarah, data, aturan), gunakan informasi yang bisa dicek dan cantumkan sumber di halaman `content/` bila relevan.
-5. Jalankan `node tools/build.js && node tools/test.js` sebelum commit. Keduanya harus lolos.
+5. Jalankan `node tools/build.js && node tools/test.js && node tools/audit-render.js` sebelum commit. Semuanya harus lolos. `audit-render.js` memastikan tidak ada tag HTML yang tampil sebagai teks mentah.
+6. Tag HTML yang boleh dipakai di teks soal: `<b> <i> <u> <br> <sub> <sup> <em> <strong>`. Tag lain akan tampil sebagai teks.
 
 ## Format soal
 
@@ -24,6 +25,7 @@ Terima kasih ingin menambah soal atau memperbaiki konten. Semua soal disimpan di
 }
 ```
 
+- `level` adalah tingkat kesulitan: **1** Mudah, **2** Sedang, **3** Sulit, **4** Sangat sulit. Pakai 3 untuk soal dua langkah atau dengan pengecoh yang menjebak, 4 untuk soal berlapis (tiga langkah atau lebih, konsep jarang, pengecoh yang hampir benar). Mode "Sulit ke atas" dan "Sangat sulit" di aplikasi hanya mengambil soal dengan level ini.
 - `stem` dengan `{w}` akan diganti oleh elemen pertama. Tanpa `stem`, elemen pertama menjadi teks soal.
 - Jumlah opsi bebas 2–5 (soal bahasa Inggris gaya TOEFL memakai 4 opsi).
 - Urutan opsi diacak otomatis saat build, jadi tulis jawaban benar selalu di posisi kedua.

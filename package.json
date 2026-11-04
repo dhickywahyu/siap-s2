@@ -5,7 +5,7 @@
   "description": "Simulasi tes masuk S2 UI, UGM, ITB dan Tes Bakat Skolastik LPDP",
   "scripts": {
     "build": "node tools/build.js",
-    "test": "node tools/build.js && node tools/test.js"
+    "test": "node tools/build.js && node tools/test.js && node tools/audit-render.js"
   },
   "license": "MIT"
 }

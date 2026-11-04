@@ -116,20 +116,32 @@ Bagian composing (menyusun kalimat dan paragraf) jarang ada di tes lain. Kuasai 
 ### Seleksi Bakat Skolastik LPDP
 Soal tidak terlalu rumit secara matematika, tetapi bersaing dengan ribuan pendaftar. Ambang ditetapkan per kelompok, jadi targetkan skor setinggi mungkin, bukan sekadar lolos.
 
-## Cara membaca skor di aplikasi ini
+## Cara skor dihitung di aplikasi ini
 
-- **Skala 200–800 (PAPs, UPDA, TPA Bappenas):** dihitung linear dari persentase benar. Penyelenggara asli memakai skala terstandar, jadi anggap ini perkiraan kasar.
-- **SIMAK UI:** menampilkan skor mentah TPA (+4/−1/0) dan persentase benar Bahasa Inggris.
-- **AcEPT:** perkiraan skala ±0–426.
-- **TOEFL ITP / ELPT:** dikonversi kasar per bagian ke skala 31–68, lalu dijumlah × 10/3 (rentang 310–677).
-- **SBS LPDP:** persentase benar. Target 70% hanyalah margin aman latihan.
+Setiap simulasi dinilai dengan aturan tes aslinya sejauh aturan itu dipublikasikan. Bagian yang tidak dipublikasikan (misalnya norma peserta) diganti asumsi yang dijelaskan di bawah, jadi skor di aplikasi adalah **estimasi yang mendekati**, bukan skor resmi. Rincian per subtes dan rumusnya muncul di halaman hasil, pada bagian "Cara skor dihitung".
 
-Gunakan tren skor di halaman Riwayat & progres, bukan satu angka tunggal.
+| Tes | Aturan resmi yang dipakai | Rumus di aplikasi | Batas akurasi |
+|---|---|---|---|
+| TOEFL ITP / ELPT / ProTEFL | Skor per bagian: Listening 31–68, Structure 31–68, Reading 31–67. Total = jumlah skor bagian × 10 ÷ 3 (310–677). | Jumlah benar tiap bagian diskalakan ke panjang tes asli (50/40/50 soal), dikonversi dengan tabel konversi TOEFL-like, lalu total = (L + S + R) × 10 ÷ 3. | ETS menyetarakan tiap formulir, jadi skor asli bisa selisih ±10–20 poin. |
+| PAPs UGM | Skor ternorma (rata-rata 500, simpangan baku 100) per subtes verbal, kuantitatif, penalaran. | 500 + 100 × Z per subtes, Z dihitung dari proporsi benar; skor akhir = rata-rata tiga subtes (200–800). | Norma asli tidak dipublikasikan. Aplikasi mengasumsikan rata-rata peserta 50% benar dengan simpangan baku 16,7%. |
+| TPA Bappenas (OTO) | Skor subtes verbal, numerik, penalaran pada skala 20–80; skor total = rata-rata × 10 (200–800). | Skor subtes dari skor ternorma ÷ 10, lalu total = (V + N + P) ÷ 3 × 10. | Tabel konversi resmi tidak dipublikasikan. |
+| UPDA ITB | Skala 200–800 per kelompok kemampuan. | Sembilan subtes digabung menjadi Verbal, Kuantitatif, dan Logika; skor akhir = rata-rata tiga kelompok. | Sama seperti PAPs: memakai norma asumsi. |
+| SIMAK UI | TPA: +4 benar, −1 salah, 0 kosong. Bahasa Inggris tanpa nilai minus. | Skor mentah TPA (bisa negatif) dan jumlah benar Bahasa Inggris, ditambah **indeks 0–100** (rata-rata persentase TPA dan Bahasa Inggris). | UI tidak memublikasikan skor, bobot, atau ambang kelulusan. Indeks hanya untuk melihat kemajuan. |
+| Tes Bakat Skolastik LPDP | Benar 5 poin, salah dan kosong 0 (tanpa nilai minus). | Proporsi benar disetarakan ke 60 soal × 5 = maksimal 300. | Ambang berbeda per periode dan kelompok: 150 (2023), 125 (2024 tahap 1), 165 (2025 tahap 2). Target aplikasi 165. |
+| AcEPT UGM | Skala ±0–426, setiap butir berbobot sama. | Proporsi benar × 426. | Bobot per bagian tidak dipublikasikan. |
+| Latihan per topik | – | Persentase benar. | Target 70% adalah margin aman latihan, bukan ambang resmi. |
+
+Tips membaca skor:
+- **Lihat tren, bukan satu angka.** Halaman Riwayat & progres menampilkan grafik skor per jenis simulasi lengkap dengan garis target.
+- **Jangan kosongkan soal di LPDP dan TOEFL.** Tidak ada nilai minus, jadi tebakan terbaik selalu lebih baik daripada kosong.
+- **Di SIMAK UI, jangan asal tebak.** Satu jawaban salah menghapus seperempat nilai satu jawaban benar, sehingga tebakan acak dari 5 opsi rata-rata bernilai nol. Tebak hanya jika sudah bisa mencoret minimal satu opsi (lebih aman dua).
+- **Mode "Sulit ke atas" dan "Sangat sulit"** sengaja lebih berat daripada tes asli, jadi skornya biasanya lebih rendah. Bandingkan skor hanya dengan sesi pada tingkat yang sama.
 
 ## Sumber
 
 - SIMAK UI: [Ruangguru: materi SIMAK UI](https://www.ruangguru.com/blog/simak-ui) · [Tirto: materi SIMAK UI 2022](https://tirto.id/materi-simak-ui-2022-gelombang-2-jadwal-ujian-perangkat-gs5V) · [Antara: SIMAK UI daring 2020](https://jabar.antaranews.com/berita/170476/ujian-masuk-ui-jalur-simak-dilakukan-secara-daring) · [Bisnis: tata cara ujian daring 2020](https://kabar24.bisnis.com/read/20200726/15/1271200/simak-ui-ekstensi-tes-daring-hari-ini-begini-tata-caranya) · [PPID UI: KAK proctoring 2025](https://ppid.ui.ac.id/wp-content/uploads/sites/344/2025/10/1.-KAK-PROCTORING.pdf) · [Jago TPA: SIMAK UI Pascasarjana 2026](https://jagotpa.id/simak-ui-pascasarjana-2026/)
 - UGM: [Lister: PAPs UGM](https://lister.co.id/blog/paps-ugm/) · [Lister: AcEPT UGM](https://lister.co.id/blog/acept-ugm/) · [Buku saku Prodi S2 KMK 2024](https://hpm.fk.ugm.ac.id/wp-content/uploads/sites/653/2024/04/Buku-Saku-Prodi-S2-KMK_Gasal-2024.pdf) · [Persyaratan Magister Geomatika UGM](https://pascageomatika.geodesi.ugm.ac.id/persyaratan-pendaftaran-program-magister) · [Kelas Bahasa: PAPs & AcEPT 2026](https://kelasbahasa.co.id/paps-acept-ugm-2026/)
 - ITB: [Admission ITB: Program Magister](https://admission.itb.ac.id/id/program/pascasarjana/program-magister-id) · [FMIPA ITB: Informasi UPDA](https://fmipa.itb.ac.id/informasi-upda-itb/) · [Kelas Bahasa: UPDA ITB 2026](https://kelasbahasa.co.id/upda-itb/) · [Kelas Bahasa: pendaftaran S2/S3 ITB 2026](https://kelasbahasa.co.id/pendaftaran-s2-s3-itb-gel-1-2026/)
-- TPA Bappenas: [Blog ITERA: contoh soal TPA Bappenas](https://blog.itera.ac.id/contoh-soal-tpa-bappenas/)
+- TPA Bappenas: [Blog ITERA: contoh soal TPA Bappenas](https://blog.itera.ac.id/contoh-soal-tpa-bappenas/) · [Sukses TPA: cara menghitung skor TPA OTO Bappenas](https://sukses-tpa.com/cara-menghitung-skor-tpa-oto-bappenas/) · [Jago TPA: nilai maksimal TPA Bappenas](https://jagotpa.id/nilai-maksimal-tpa-bappenas-strategi/)
+- Penilaian: [ETS: skor TOEFL ITP](https://www.ets.org/content/ets-org/ca/en/toefl/itp/scoring.html) · [UPAP Psikologi UGM: Buku Manual Tes PAPs](https://upap.psikologi.ugm.ac.id/wp-content/uploads/sites/59/2021/08/Buku-Manual-Tes-PAPS.pdf) · [RRI: passing grade TBS LPDP 2025](https://rri.co.id/nasional/1490869/penjelasan-passing-grade-tbs-tes-substansi-lpdp-2025) · [IDN Times: passing grade LPDP 2025 tahap 2](https://www.idntimes.com/life/education/berapa-passing-grade-lpdp-2025-tahap-2-c1c2-01-6cnpl-vs3dh3/amp)
 - LPDP: [LPDP: Beasiswa SHARE](https://lpdp.kemenkeu.go.id/en/beasiswa/beasiswa-share/beasiswa-share/) · [Medcom: tahapan LPDP 2025](https://www.medcom.id/pendidikan/news-pendidikan/aNrjjexN-tahapan-seleksi-beasiswa-lpdp-2025-punya-loa-tak-perlu-seleksi-skolastik) · [GNFI: LPDP batch 2 2025](https://www.goodnewsfromindonesia.id/short/beasiswa-lpdp-batch-2-tahun-2025-resmi-dibuka-catat-tanggalnya) · [Exademy: jadwal LPDP 2026](https://exademy.com/jadwal-ujian/lpdp-bakat-skolastik/) · [Gramedia: tes LPDP](https://www.gramedia.com/blog/tes-lpdp-2025/amp/) · [AIYA: pengalaman LPDP 2016](https://aiya.org.au/category/blog/page/39/) · [Golden English: tes substansi LPDP 2026](https://golden-course.com/tes-substansi-adalah/)

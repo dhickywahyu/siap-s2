@@ -24,5 +24,7 @@ jobs:
         run: node tools/build.js
       - name: Uji otomatis
         run: node tools/test.js
+      - name: Audit tampilan teks soal (tanpa HTML mentah)
+        run: node tools/audit-render.js
       - name: Pastikan folder data/ sudah di-build ulang sebelum commit
         run: git diff --exit-code -- data/bank.js data/vocab.js || (echo "Jalankan 'node tools/build.js' lalu commit folder data/." && exit 1)

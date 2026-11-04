@@ -25,7 +25,7 @@
   const TPA = [4, -1, 0];
   S.EXAMS = [
     {
-      id: 'simak-ui', kampus: 'UI', name: 'SIMAK UI Magister', timing: 'section', scale: 'simak',
+      id: 'simak-ui', kampus: 'UI', name: 'SIMAK UI Magister', timing: 'section', scale: 'simak', target: 60,
       blurb: 'TPA (verbal, kuantitatif, logika) lalu Bahasa Inggris. TPA dinilai +4 benar, −1 salah, 0 kosong.',
       note: 'Pada SIMAK 2022, peserta mendapat jeda 30 menit antara TPA dan Bahasa Inggris. Sumber berbeda menyebut 90–150 soal TPA; simulasi ini memakai 90 soal TPA + 60 soal Bahasa Inggris.',
       sections: [
@@ -36,7 +36,7 @@
       ],
     },
     {
-      id: 'paps-ugm', kampus: 'UGM', name: 'PAPs UGM', timing: 'section', scale: 'tpa', target: 500,
+      id: 'paps-ugm', kampus: 'UGM', name: 'PAPs UGM', timing: 'section', scale: 'paps', target: 500,
       blurb: 'Potensi Akademik Pascasarjana: 120 soal dalam 100 menit, tiap subtes punya waktu sendiri.',
       note: 'Skor minimal umumnya 500 untuk magister, tetapi prodi boleh menetapkan lebih tinggi. Sertifikat berlaku 2 tahun.',
       sections: [
@@ -58,23 +58,23 @@
       ],
     },
     {
-      id: 'upda-itb', kampus: 'ITB', name: 'UPDA ITB', timing: 'section', scale: 'tpa', target: 475,
+      id: 'upda-itb', kampus: 'ITB', name: 'UPDA ITB', timing: 'section', scale: 'upda', target: 475,
       blurb: '9 subtes masing-masing 15 menit: sinonim, antonim, padanan, pemahaman teks, aritmetika, deret, operasi, analisis, logika formal.',
       note: 'Syarat umum magister ITB: UPDA/TPA Bappenas minimal 475 (beberapa prodi lebih tinggi, misalnya MSM SBM 525). Skala skor 200–800.',
       sections: [
-        { name: 'Sinonim', min: 15, draw: [['sinonim', 25]] },
-        { name: 'Antonim', min: 15, draw: [['antonim', 25]] },
-        { name: 'Padanan hubungan', min: 15, draw: [['analogi', 25]] },
-        { name: 'Pemahaman teks', min: 15, draw: [['bacaan', 15]] },
-        { name: 'Aritmetika', min: 15, draw: [['aritmetika', 25]] },
-        { name: 'Deret', min: 15, draw: [['deret', 20], ['deret-huruf', 5]] },
-        { name: 'Operasi matematika', min: 15, draw: [['operasi', 15], ['aljabar', 10]] },
-        { name: 'Analisis', min: 15, draw: [['soal-cerita', 8], ['perbandingan-kuantitatif', 4], ['statistika', 3]] },
-        { name: 'Logika formal', min: 15, draw: [['silogisme', 10], ['logika-proposisi', 5]] },
+        { name: 'Sinonim', group: 'Verbal', min: 15, draw: [['sinonim', 25]] },
+        { name: 'Antonim', group: 'Verbal', min: 15, draw: [['antonim', 25]] },
+        { name: 'Padanan hubungan', group: 'Verbal', min: 15, draw: [['analogi', 25]] },
+        { name: 'Pemahaman teks', group: 'Verbal', min: 15, draw: [['bacaan', 15]] },
+        { name: 'Aritmetika', group: 'Kuantitatif', min: 15, draw: [['aritmetika', 25]] },
+        { name: 'Deret', group: 'Kuantitatif', min: 15, draw: [['deret', 20], ['deret-huruf', 5]] },
+        { name: 'Operasi matematika', group: 'Kuantitatif', min: 15, draw: [['operasi', 15], ['aljabar', 10]] },
+        { name: 'Analisis', group: 'Kuantitatif', min: 15, draw: [['soal-cerita', 8], ['perbandingan-kuantitatif', 4], ['statistika', 3]] },
+        { name: 'Logika formal', group: 'Logika', min: 15, draw: [['silogisme', 10], ['logika-proposisi', 5]] },
       ],
     },
     {
-      id: 'tpa-bappenas', kampus: 'UGM · ITB · umum', name: 'TPA Bappenas', timing: 'section', scale: 'tpa', target: 500,
+      id: 'tpa-bappenas', kampus: 'UGM · ITB · umum', name: 'TPA Bappenas', timing: 'section', scale: 'bappenas', target: 500,
       blurb: 'TPA versi Bappenas (dulu OTO Bappenas): verbal, numerik, penalaran. Diterima UGM, ITB, dan banyak kampus lain.',
       note: 'Jumlah soal dan durasi resmi tidak dipublikasikan secara konsisten; simulasi memakai 120 soal/2 jam. Skor berlaku 2 tahun.',
       sections: [
@@ -84,9 +84,9 @@
       ],
     },
     {
-      id: 'lpdp-tbs', kampus: 'LPDP', name: 'Tes Bakat Skolastik LPDP', timing: 'global', scale: 'pct', target: 70,
+      id: 'lpdp-tbs', kampus: 'LPDP', name: 'Tes Bakat Skolastik LPDP', timing: 'global', scale: 'tbs', target: 165,
       blurb: 'Seleksi Bakat Skolastik: verbal, kuantitatif, penalaran/pemecahan masalah, berbasis komputer.',
-      note: 'Satu sumber menyebut 60 soal/90 menit pada 2026. Kelulusan ditetapkan per kelompok pendaftar; target 70% di sini hanyalah margin aman latihan, bukan angka resmi.',
+      note: 'Disebut 60 soal/90 menit. Benar bernilai 5, salah/kosong 0 (maks 300). Ambang reguler tercatat 150 (2023), 125 (2024 tahap 1), 165 (2025 tahap 2); targetkan di atas 165.',
       sections: [
         { name: 'Verbal', min: 30, draw: [['sinonim', 4], ['antonim', 3], ['analogi', 5], ['bacaan', 8]] },
         { name: 'Kuantitatif', min: 30, draw: [['deret', 5], ['aritmetika', 4], ['soal-cerita', 7], ['perbandingan-kuantitatif', 2], ['statistika', 2]] },
@@ -106,6 +106,9 @@
   ];
   S.examById = (id) => S.EXAMS.find((e) => e.id === id);
 
+  S.LEVELS = { 1: 'Mudah', 2: 'Sedang', 3: 'Sulit', 4: 'Sangat sulit' };
+  S.DIFFS = { campuran: ['Campuran (seperti tes asli)', 1], sulit: ['Sulit ke atas', 3], sangat: ['Sangat sulit', 4] };
+
   S.DRILLS = [
     { id: 'kilat-deret', title: 'Kilat deret angka', subs: ['deret'], n: 20, min: 10, why: 'Deret muncul di hampir semua TPA. Target: < 30 detik per soal.' },
     { id: 'kilat-silogisme', title: 'Silogisme & logika formal', subs: ['silogisme', 'logika-proposisi'], n: 15, min: 12, why: 'Latih pola modus ponens, tollens, dan jebakan konvers.' },
@@ -117,6 +120,10 @@
     { id: 'kilat-structure', title: 'Structure + written expression', subs: ['structure', 'written-expression'], n: 25, min: 15, why: 'Bagian paling cepat naik skornya untuk pemula.' },
     { id: 'kilat-reading', title: 'Reading (2–3 teks)', subs: ['reading'], n: 12, min: 18, why: 'Latih skimming, scanning, dan main idea.' },
     { id: 'kilat-listening', title: 'Listening lab', subs: ['listening'], n: 10, min: 10, why: 'Audio dibacakan mesin teks-ke-suara browser.' },
+    { id: 'tantangan-kuant', title: 'Tantangan kuantitatif sangat sulit', subs: ['deret', 'soal-cerita', 'aljabar', 'peluang', 'operasi'], n: 15, min: 25, diff: 'sangat', why: 'Deret dua tingkat, sisa pembagian, peluang bersyarat, campuran larutan.' },
+    { id: 'tantangan-nalar', title: 'Tantangan penalaran sangat sulit', subs: ['analitis', 'silogisme', 'urutan', 'logika-proposisi'], n: 12, min: 20, diff: 'sangat', why: 'Teka-teki 6 orang, silogisme tiga premis, urutan tidak langsung.' },
+    { id: 'tantangan-verbal', title: 'Tantangan verbal sulit', subs: ['sinonim', 'antonim', 'analogi'], n: 25, min: 12, diff: 'sulit', why: 'Kosakata serapan jarang dan analogi berlapis.' },
+    { id: 'tantangan-english', title: 'Tantangan bahasa Inggris sulit', subs: ['structure', 'written-expression', 'vocabulary', 'reading'], n: 20, min: 20, diff: 'sulit', why: 'Inversi, subjunctive, klausa tereduksi, kosakata C1.' },
     { id: 'kilat-vocab', title: 'Vocabulary', subs: ['vocabulary'], n: 20, min: 8, why: 'Diambil dari daftar kosakata akademik di English Booster.' },
   ];
 })((window.SiapS2 = window.SiapS2 || {}));

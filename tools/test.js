@@ -13,7 +13,7 @@ global.window = global;
 global.btoa = (s) => Buffer.from(s, 'binary').toString('base64');
 global.atob = (s) => Buffer.from(s, 'base64').toString('binary');
 
-['data/vocab.js', 'data/bank.js', 'data/content.js', 'assets/js/util.js', 'assets/js/exams.js', 'assets/js/content-data.js', 'assets/js/generators.js', 'assets/js/engine.js']
+['data/vocab.js', 'data/bank.js', 'data/content.js', 'assets/js/util.js', 'assets/js/exams.js', 'assets/js/scoring.js', 'assets/js/content-data.js', 'assets/js/generators.js', 'assets/js/engine.js']
   .forEach((f) => require(path.join(ROOT, f)));
 const S = global.SiapS2;
 let fail = 0;

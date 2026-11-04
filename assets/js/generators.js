@@ -730,21 +730,510 @@
     return { c: E, s: 'vocabulary', l: 1, q: `Arti kata <b>${w[0]}</b> (${w[1]}) yang paling tepat adalah …`, o, a: o.indexOf(w[3]), e: `${w[0]} = ${w[3]}. Contoh: "${w[4]}"` };
   });
 
+  /* =====================================================================
+   *  SOAL SULIT (level 3) & SANGAT SULIT (level 4)
+   *  Semua kunci dihitung program; teka-teki memakai solver brute force
+   *  sehingga dijamin tepat satu jawaban.
+   * ===================================================================== */
+  const ABSTRAK = ['kropi', 'lemba', 'sutri', 'dorsi', 'fenu', 'zarnik', 'pelop', 'trimu', 'gavo', 'mirsa', 'tolas', 'vemi'];
+  const perms = (arr) => { if (arr.length <= 1) return [arr.slice()]; const out = []; arr.forEach((x, i) => perms([...arr.slice(0, i), ...arr.slice(i + 1)]).forEach((p) => out.push([x, ...p]))); return out; };
+  const PERM_CACHE = {};
+  const permIdx = (n) => (PERM_CACHE[n] = PERM_CACHE[n] || perms([...Array(n).keys()]));
+  const modpow = (b, e, m) => { let res = 1 % m; b %= m; while (e > 0) { if (e & 1) res = (res * b) % m; b = (b * b) % m; e = Math.floor(e / 2); } return res; };
+
+  // ---------- DERET ----------
+  add('deret', (r) => { // selisih membentuk deret geometri
+    const a = r.int(1, 20), d = r.int(1, 4), q = r.pick([2, 3]);
+    const s = [a], diffs = [];
+    for (let i = 0; i < 6; i++) { diffs.push(d * q ** i); s.push(s[i] + d * q ** i); }
+    return build(r, { c: K, s: 'deret', l: 3, q: seqQ(s.slice(0, 6)), e: `Selisih antarsuku ${diffs.slice(0, 5).join(', ')} membentuk deret geometri (×${q}). Selisih berikutnya ${diffs[5]}, jadi ${s[5]} + ${diffs[5]} = ${s[6]}.` },
+      s[6], [s[5] + diffs[4] + d, s[5] + diffs[4] * 2 + 1, s[6] + q, s[6] - q, ...near(r, s[6], q * 2)]);
+  });
+  add('deret', (r) => { // ×2 lalu + bilangan yang terus bertambah
+    const a = r.int(1, 6), m = r.pick([2, 3]), s = [a];
+    for (let i = 0; i < 5; i++) s.push(s[i] * m + (i + 1));
+    return build(r, { c: K, s: 'deret', l: 4, q: seqQ(s.slice(0, 5)), e: `Pola ×${m} lalu ditambah 1, 2, 3, 4, …: ${s[4]} × ${m} + 5 = ${s[5]}.` },
+      s[5], [s[4] * m + 4, s[4] * m + 6, s[4] * m, s[4] * (m + 1), ...near(r, s[5], 3)]);
+  });
+  add('deret', (r) => { // tiga deret selang-seling
+    const a1 = r.int(1, 9), d1 = r.int(2, 5), a2 = r.int(1, 4), a3 = r.int(40, 70), d3 = r.int(3, 7);
+    const s1 = [0, 1, 2].map((i) => a1 + i * d1), s2 = [0, 1, 2].map((i) => a2 * 2 ** i), s3 = [0, 1, 2].map((i) => a3 - i * d3);
+    const seq = [s1[0], s2[0], s3[0], s1[1], s2[1], s3[1], s1[2], s2[2]];
+    return build(r, { c: K, s: 'deret', l: 4, q: seqQ(seq), e: `Tiga deret bergiliran: (${s1.join(', ')}) +${d1}; (${s2.join(', ')}) ×2; (${s3.slice(0, 2).join(', ')}, …) −${d3}. Suku berikutnya milik deret ketiga: ${s3[1]} − ${d3} = ${s3[2]}.` },
+      s3[2], [s1[2] + d1, s2[2] * 2, s3[2] - d3, s3[2] + d3, ...near(r, s3[2], 2)]);
+  });
+  add('deret', (r) => { // n² + n (n genap), n² − n (n ganjil)
+    const k = r.int(2, 6);
+    const t = (n) => n * n + (n % 2 === 0 ? n : -n);
+    const s = [0, 1, 2, 3, 4, 5].map((i) => t(k + i));
+    return build(r, { c: K, s: 'deret', l: 4, q: seqQ(s.slice(0, 5)), e: `Untuk n = ${k}, ${k + 1}, …: n² + n jika n genap, n² − n jika n ganjil. n = ${k + 5} → ${(k + 5) ** 2} ${(k + 5) % 2 === 0 ? '+' : '−'} ${k + 5} = ${s[5]}.` },
+      s[5], [(k + 5) ** 2 + ((k + 5) % 2 === 0 ? -(k + 5) : k + 5), (k + 5) ** 2, s[4] + (s[4] - s[3]), s[5] + 1, ...near(r, s[5], 4)]);
+  });
+  add('deret', (r) => { // dua suku hilang
+    const a = r.int(2, 15), d0 = r.int(2, 6), dd = r.int(1, 3);
+    const s = [a];
+    for (let i = 0; i < 6; i++) s.push(s[i] + d0 + i * dd);
+    const show = s.map((x, i) => (i === 2 || i === 5 ? '…' : x)).join(', ');
+    const pair = (x, y) => `${x} dan ${y}`;
+    const o = r.shuffle([pair(s[2], s[5]), pair(s[2] + 1, s[5]), pair(s[2], s[5] + dd), pair(s[2] - dd, s[5] - dd), pair(s[2] + dd, s[5] + 2 * dd)]);
+    return { c: K, s: 'deret', l: 3, q: `Dua bilangan yang tepat untuk mengisi titik-titik secara berurutan adalah …<span class="seq">${show}</span>`, o, a: o.indexOf(pair(s[2], s[5])),
+      e: `Selisih bertambah ${dd}: ${s.slice(1).map((x, i) => x - s[i]).join(', ')}. Maka suku ke-3 = ${s[2]} dan suku ke-6 = ${s[5]}.` };
+  });
+  add('deret', (r) => { // pecahan: pembilang aritmetika, penyebut geometri
+    const a = r.int(1, 5), d = r.int(1, 3), b = r.int(2, 4);
+    const t = (i) => `${a + i * d}/${b * 2 ** i}`;
+    return build(r, { c: K, s: 'deret', l: 3, q: `Suku berikutnya dari deret berikut adalah …<span class="seq">${[0, 1, 2, 3, 4].map(t).join(', ')}, …</span>`,
+      e: `Pembilang bertambah ${d} (${a}, ${a + d}, …) dan penyebut dikali 2 (${b}, ${b * 2}, …). Suku keenam ${t(5)}.` },
+      t(5), [`${a + 5 * d}/${b * 2 ** 4 + b}`, `${a + 4 * d}/${b * 2 ** 5}`, `${a + 6 * d}/${b * 2 ** 5}`, `${a + 5 * d}/${b * 2 ** 6}`, `${a + 5 * d + 1}/${b * 2 ** 5}`, `${a + 5 * d}/${b * 2 ** 4}`], String);
+  });
+
+  // ---------- DERET HURUF + ANGKA ----------
+  add('deret-huruf', (r) => {
+    const st = r.int(0, 3), first = r.int(1, 2);
+    const idx = [st];
+    for (let i = 1; i < 6; i++) idx.push(idx[i - 1] + first + i - 1);
+    const num = (i) => (i + 1) * (i + 2);
+    const term = (i) => `${L(idx[i])}${num(i)}`;
+    const ans = term(5);
+    const cands = [`${L(idx[5] + 1)}${num(5)}`, `${L(idx[5])}${num(5) + 6}`, `${L(idx[5] - 1)}${num(5)}`, `${L(idx[4] + first + 3)}${num(4) + 10}`, `${L(idx[5] + 2)}${num(5) - 2}`];
+    return build(r, { c: P, s: 'deret-huruf', l: 4, q: `Suku berikutnya dari deret berikut adalah …<span class="seq">${[0, 1, 2, 3, 4].map(term).join(', ')}, …</span>`,
+      e: `Huruf melompat ${first}, ${first + 1}, ${first + 2}, … posisi (${idx.slice(0, 5).map((i) => L(i)).join(' → ')} → ${L(idx[5])}); angka mengikuti n(n + 1): 2, 6, 12, 20, 30, 42. Jawaban ${ans}.` },
+      ans, cands, String);
+  });
+
+  // ---------- ARITMETIKA & OPERASI ----------
+  add('operasi', (r) => { // sisa pembagian / angka satuan pangkat besar
+    const b = r.pick([2, 3, 7, 8, 9, 13, 17]), e = r.pick([2025, 2026, 2027, 1234, 999, 3001]);
+    const lastDigit = r.chance(0.5);
+    const m = lastDigit ? 10 : r.pick([5, 7]);
+    const ans = modpow(b, e, m);
+    const cyc = []; for (let k = 1; k <= 12; k++) { const v = modpow(b, k, m); if (cyc.includes(v) && v === cyc[0]) break; cyc.push(v); }
+    const q = lastDigit ? `Angka satuan dari ${b}<sup>${e}</sup> adalah …` : `Sisa pembagian ${b}<sup>${e}</sup> oleh ${m} adalah …`;
+    const cands = [...Array(m).keys()].filter((x) => x !== ans);
+    return build(r, { c: K, s: 'operasi', l: 4, q, e: `Pola ${lastDigit ? 'angka satuan' : `sisa ÷ ${m}`} dari ${b}¹, ${b}², …: ${cyc.join(', ')} (berulang setiap ${cyc.length}). ${e} ÷ ${cyc.length} bersisa ${e % cyc.length || cyc.length}, jadi jawabannya ${ans}.` },
+      ans, r.shuffle(cands));
+  });
+  add('aritmetika', (r) => { // inklusi-eksklusi
+    const N = r.pick([100, 200, 300, 500, 1000]);
+    const [a, b] = r.pick([[3, 5], [4, 6], [3, 7], [5, 7], [4, 10], [6, 9], [2, 7]]);
+    const lm = lcm(a, b), na = Math.floor(N / a), nb = Math.floor(N / b), nab = Math.floor(N / lm);
+    const xor = r.chance(0.5);
+    const ans = xor ? na + nb - 2 * nab : na + nb - nab;
+    return build(r, { c: K, s: 'aritmetika', l: xor ? 4 : 3, q: `Banyak bilangan bulat dari 1 sampai ${N} yang habis dibagi ${a} atau ${b}${xor ? ', tetapi tidak habis dibagi keduanya,' : ''} adalah …`,
+      e: `Habis dibagi ${a}: ${na}; habis dibagi ${b}: ${nb}; habis dibagi keduanya (KPK ${lm}): ${nab}. ${xor ? `${na} + ${nb} − 2 × ${nab}` : `${na} + ${nb} − ${nab}`} = ${ans}.` },
+      ans, [na + nb, na + nb - nab, na + nb - 2 * nab, na + nb + nab, ans + nab, ...near(r, ans, 3)].filter((x) => x !== ans));
+  });
+  add('aritmetika', (r) => { // pecahan bersusun
+    const x = r.int(2, 9);
+    const ans = frac(x + 1, 2 * x + 1);
+    return build(r, { c: K, s: 'aritmetika', l: 3, q: `Nilai dari 1 ÷ (1 + 1 ÷ (1 + 1/${x})) adalah …`,
+      e: `Kerjakan dari dalam: 1 + 1/${x} = ${x + 1}/${x}. 1 ÷ (${x + 1}/${x}) = ${x}/${x + 1}. 1 + ${x}/${x + 1} = ${2 * x + 1}/${x + 1}. Terakhir 1 ÷ (${2 * x + 1}/${x + 1}) = ${ans}.` },
+      ans, [frac(x, x + 1), frac(2 * x + 1, x + 1), frac(x + 1, x), frac(x, 2 * x + 1), frac(x + 2, 2 * x + 1)], String);
+  });
+  add('operasi', (r) => { // eksponen basis 2
+    const a = r.int(3, 9), b = r.int(1, 5), c = r.int(1, 4), d = r.int(1, 3);
+    const k = a + 2 * b - 3 * c + 4 * d;
+    const p2 = (e) => `2<sup>${e}</sup>`;
+    const o = r.shuffle([k, k + 1, k - 1, a + b - c + d, k + 2].filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 5));
+    while (o.length < 5) o.push(k + o.length + 2);
+    return { c: K, s: 'operasi', l: 3, q: `Bentuk sederhana dari (2<sup>${a}</sup> × 4<sup>${b}</sup> × 16<sup>${d}</sup>) ÷ 8<sup>${c}</sup> adalah …`, o: o.map(p2), h: 1, a: o.indexOf(k),
+      e: `Ubah ke basis 2: 4 = 2², 16 = 2⁴, 8 = 2³. Pangkat: ${a} + 2·${b} + 4·${d} − 3·${c} = ${k}. Hasil 2<sup>${k}</sup>.` };
+  });
+  add('aritmetika', (r) => { // estimasi orde besaran
+    const a = r.pick([0.49, 0.51, 0.248, 0.252, 0.199, 0.201]), b = r.pick([79.8, 80.3, 119.6, 160.2, 39.9]), c = r.pick([0.0198, 0.199, 0.0499, 0.497]);
+    const exact = (a * b) / c;
+    const mag = 10 ** (Math.floor(Math.log10(exact)) - 1);
+    const nice = Math.round(exact / mag) * mag;
+    const cands = [nice / 10, nice * 10, nice / 2, nice * 2, nice / 100, nice * 4].filter((x) => x !== nice);
+    const fmt = (x) => nf(Math.round(x * 100) / 100);
+    return build(r, { c: K, s: 'aritmetika', l: 3, q: `Nilai yang paling mendekati ${nf(a)} × ${nf(b)} ÷ ${nf(c)} adalah …`,
+      e: `Bulatkan: ${nf(a)} ≈ ${nf(Math.round(a * 20) / 20)}, ${nf(b)} ≈ ${Math.round(b / 10) * 10}, ${nf(c)} ≈ ${nf(Math.round(c * 200) / 200)}. Hasil eksak ≈ ${nf(Math.round(exact))}, paling dekat ${fmt(nice)}. Fokus pada letak koma (orde besaran).` },
+      nice, cands, fmt);
+  });
+
+  // ---------- ALJABAR ----------
+  add('aljabar', (r) => { // akar persamaan kuadrat
+    let p = r.int(-6, 9), q = r.int(-6, 9);
+    if (p === 0) p = 2; if (q === 0 || q === p) q = p + 3;
+    const sum = p + q, prod = p * q;
+    const sg = (v) => (v < 0 ? `− ${-v}` : `+ ${v}`);
+    const eq = `x² ${sg(-sum)}x ${sg(prod)} = 0`.replace('+ 0x ', '').replace('− 0x ', '').replace(/([+−]) 1x/, '$1 x');
+    if (r.chance(0.5)) {
+      const ans = sum * sum - 2 * prod;
+      return build(r, { c: K, s: 'aljabar', l: 3, q: `Jika x₁ dan x₂ adalah akar-akar ${eq}, nilai x₁² + x₂² adalah …`,
+        e: `x₁ + x₂ = ${sum}, x₁x₂ = ${prod}. x₁² + x₂² = (x₁ + x₂)² − 2x₁x₂ = ${sum * sum} − ${2 * prod} = ${ans}. Tidak perlu mencari akarnya.` },
+        ans, [sum * sum, sum * sum + 2 * prod, ans + 2, ans - 2, prod * 2, ...near(r, ans, 3, 12, true)].filter((x) => x !== ans));
+    }
+    const ans = frac(sum, prod);
+    return build(r, { c: K, s: 'aljabar', l: 4, q: `Jika x₁ dan x₂ adalah akar-akar ${eq}, nilai 1/x₁ + 1/x₂ adalah …`,
+      e: `1/x₁ + 1/x₂ = (x₁ + x₂)/(x₁x₂) = ${sum}/${prod} = ${ans}.` },
+      ans, [frac(prod, sum || 1), frac(-sum, prod), frac(sum, -prod), frac(sum + 1, prod), frac(1, prod)].filter((x) => x !== ans), String);
+  });
+  add('aljabar', (r) => { // pertidaksamaan nilai mutlak
+    const a = r.pick([1, 2, 3]), b = r.int(-6, 9) || 1, c = r.int(4, 13);
+    let cnt = 0; const xs = [];
+    for (let x = -60; x <= 60; x++) if (Math.abs(a * x - b) < c) { cnt++; xs.push(x); }
+    if (!cnt) throw new Error('retry');
+    return build(r, { c: K, s: 'aljabar', l: 3, q: `Banyak bilangan bulat x yang memenuhi |${a === 1 ? '' : a}x ${b < 0 ? '+ ' + -b : '− ' + b}| < ${c} adalah …`,
+      e: `−${c} < ${a === 1 ? '' : a}x ${b < 0 ? '+ ' + -b : '− ' + b} < ${c} → ${nf((b - c) / a)} < x < ${nf((b + c) / a)}. Bilangan bulatnya ${xs[0]} sampai ${xs[xs.length - 1]}: ${cnt} bilangan.` },
+      cnt, [cnt + 1, cnt - 1, cnt + 2, 2 * c - 1, cnt * 2].filter((x) => x !== cnt && x > 0));
+  });
+  add('aljabar', (r) => { // sistem tiga variabel
+    const x = r.int(2, 15), y = r.int(2, 15), z = r.int(2, 15);
+    const A = x + y, B = y + z, Cc = x + z;
+    const askSum = r.chance(0.5);
+    const ans = askSum ? x + y + z : x;
+    return build(r, { c: K, s: 'aljabar', l: 3, q: `Diketahui x + y = ${A}, y + z = ${B}, dan x + z = ${Cc}. Nilai ${askSum ? 'x + y + z' : 'x'} adalah …`,
+      e: `Jumlahkan ketiganya: 2(x + y + z) = ${A + B + Cc} → x + y + z = ${x + y + z}.${askSum ? '' : ` Maka x = ${x + y + z} − (y + z) = ${x + y + z} − ${B} = ${x}.`}` },
+      ans, [A + B + Cc, x + y + z + 1, askSum ? x : x + y + z, ans + 2, ans - 2, y, z].filter((v) => v !== ans));
+  });
+  add('aljabar', (r) => { // fungsi komposisi & invers
+    const a = r.int(2, 5), b = r.int(-7, 9), c = r.int(1, 3), d = r.int(-4, 5), k = r.int(-3, 4);
+    const g = c * k * k + d, ans = a * g + b;
+    const sg = (v) => (v < 0 ? `− ${-v}` : `+ ${v}`);
+    return build(r, { c: K, s: 'aljabar', l: 3, q: `Jika f(x) = ${a}x ${sg(b)} dan g(x) = ${c === 1 ? '' : c}x² ${sg(d)}, nilai (f ∘ g)(${k}) adalah …`,
+      e: `(f ∘ g)(${k}) = f(g(${k})). g(${k}) = ${c}·${k * k} ${sg(d)} = ${g}. f(${g}) = ${a}·${g} ${sg(b)} = ${ans}.` },
+      ans, [c * (a * k + b) ** 2 + d, a * k + b, ans + a, ans - a, g, ...near(r, ans, 3, 12, true)].filter((v) => v !== ans));
+  });
+
+  // ---------- SOAL CERITA SULIT ----------
+  add('soal-cerita', (r) => { // menyusul dengan selisih waktu berangkat
+    for (let t = 0; t < 40; t++) {
+      const v1 = r.int(6, 12) * 5, v2 = v1 + r.int(2, 8) * 5, hm = r.pick([30, 60, 90, 120]);
+      const catchMin = (v1 * hm) / (v2 - v1); // menit sejak orang kedua berangkat
+      if (!Number.isInteger(catchMin) || catchMin > 600) continue;
+      const start = r.int(6, 9) * 60;
+      const ans = hhmm(start + hm + catchMin);
+      return build(r, { c: K, s: 'soal-cerita', l: 4, q: `Rudi berangkat pukul ${hhmm(start)} dengan kecepatan ${v1} km/jam. ${hm} menit kemudian Sinta menyusul dari tempat yang sama melalui jalan yang sama dengan kecepatan ${v2} km/jam. Sinta menyusul Rudi pukul …`,
+        e: `Saat Sinta berangkat, Rudi sudah menempuh ${v1} × ${nf(hm / 60)} = ${nf((v1 * hm) / 60)} km. Selisih kecepatan ${v2 - v1} km/jam, waktu menyusul = ${nf((v1 * hm) / 60)} ÷ ${v2 - v1} = ${nf(catchMin / 60)} jam. ${hhmm(start + hm)} + ${catchMin} menit = ${ans}.` },
+        ans, [hhmm(start + catchMin), hhmm(start + hm + (v1 * hm) / (v2 + v1)), hhmm(start + hm + catchMin + 30), hhmm(start + hm + catchMin - 30), hhmm(start + 2 * hm + catchMin)], String);
+    }
+    throw new Error('retry');
+  });
+  add('soal-cerita', (r) => { // kerja bersama lalu satu orang berhenti
+    for (let t = 0; t < 80; t++) {
+      const a = r.int(6, 20), b = r.int(8, 30), k = r.int(1, 4);
+      if (a === b) continue;
+      const remain = 1 - k * (1 / a + 1 / b);
+      if (remain <= 0.05) continue;
+      const restDays = remain * b, total = k + restDays;
+      if (Math.abs(total * 2 - Math.round(total * 2)) > 1e-9) continue;
+      const ans = Math.round(total * 2) / 2;
+      return build(r, { c: K, s: 'soal-cerita', l: 4, q: `Andi dapat menyelesaikan sebuah proyek sendirian dalam ${a} hari, sedangkan Budi dalam ${b} hari. Mereka bekerja bersama selama ${k} hari, lalu Andi berhenti dan Budi menyelesaikan sisanya sendirian. Proyek selesai dalam total … hari.`,
+        e: `Bersama ${k} hari: ${k} × (1/${a} + 1/${b}) = ${frac(k * (a + b), a * b)} bagian. Sisa ${frac(a * b - k * (a + b), a * b)} dikerjakan Budi: × ${b} = ${nf(restDays)} hari. Total ${k} + ${nf(restDays)} = ${nf(ans)} hari.` },
+        ans, [restDays, (a * b) / (a + b), ans + 1, ans - 1, ans + 2, ans + 0.5].map((x) => Math.round(x * 2) / 2));
+    }
+    throw new Error('retry');
+  });
+  add('soal-cerita', (r) => { // campuran larutan
+    for (let t = 0; t < 60; t++) {
+      const p = r.pick([10, 15, 20, 25]), q = r.pick([40, 50, 60, 75]), tg = r.int(p / 5 + 1, q / 5 - 1) * 5, x = r.int(2, 12) * 5;
+      const y = (x * (tg - p)) / (q - tg);
+      if (!Number.isInteger(y) || tg <= p || tg >= q) continue;
+      return build(r, { c: K, s: 'soal-cerita', l: 3, q: `Sebanyak ${x} liter larutan gula ${p}% dicampur dengan larutan gula ${q}% agar diperoleh larutan ${tg}%. Banyak larutan ${q}% yang diperlukan adalah … liter.`,
+        e: `Kesetimbangan: ${x}·(${tg} − ${p}) = y·(${q} − ${tg}) → ${x * (tg - p)} = ${q - tg}y → y = ${y} liter. (Cara alligation: perbandingan ${q - tg} : ${tg - p}.)` },
+        y, [(x * (q - tg)) / (tg - p), x, y + 5, y - 5, (x * tg) / q].map((v) => Math.round(v * 10) / 10).filter((v) => v > 0));
+    }
+    throw new Error('retry');
+  });
+  add('soal-cerita', (r) => { // dua pipa mengisi, satu menguras
+    for (let t = 0; t < 80; t++) {
+      const a = r.int(3, 12), b = r.int(4, 15), c = r.int(4, 20);
+      const rate = 1 / a + 1 / b - 1 / c;
+      if (rate <= 0) continue;
+      const time = 1 / rate;
+      if (Math.abs(time - Math.round(time)) > 1e-9) continue;
+      return build(r, { c: K, s: 'soal-cerita', l: 4, q: `Pipa A dapat mengisi penuh sebuah tangki dalam ${a} jam dan pipa B dalam ${b} jam. Pipa C dapat mengosongkan tangki penuh dalam ${c} jam. Jika ketiganya dibuka bersamaan dari tangki kosong, tangki penuh dalam … jam.`,
+        e: `Laju bersih = 1/${a} + 1/${b} − 1/${c} = ${frac(b * c + a * c - a * b, a * b * c)} tangki per jam → waktu = ${Math.round(time)} jam.` },
+        Math.round(time), [(a * b) / (a + b), 1 / (1 / a + 1 / b + 1 / c), time + 1, time - 1, time + 2].map((x) => Math.round(x * 10) / 10).filter((x) => x > 0));
+    }
+    throw new Error('retry');
+  });
+  add('soal-cerita', (r) => { // umur dengan dua kondisi
+    for (let t = 0; t < 60; t++) {
+      const c = r.int(8, 25), n = r.int(2, 6), m = r.int(3, 6);
+      const f = m * (c - n) + n;
+      if (f - c < 18 || f > 70) continue;
+      const S2 = f + c;
+      return build(r, { c: K, s: 'soal-cerita', l: 3, q: `Jumlah umur ayah dan anaknya sekarang ${S2} tahun. ${n} tahun yang lalu, umur ayah ${m} kali umur anaknya. Umur anak sekarang adalah … tahun.`,
+        e: `Misal anak = x, ayah = ${S2} − x. ${n} tahun lalu: ${S2} − x − ${n} = ${m}(x − ${n}) → ${S2 - n} + ${m * n} = ${m + 1}x → x = ${c}.` },
+        c, [c + n, c - n, Math.round(S2 / (m + 1)), c + 1, f - c].filter((x) => x !== c && x > 0));
+    }
+    throw new Error('retry');
+  });
+  add('soal-cerita', (r) => { // rata-rata kecepatan tiga segmen sama jauh
+    const [v1, v2, v3, avg] = r.pick([[10, 15, 30, 15], [20, 30, 60, 30], [30, 45, 90, 45], [40, 60, 120, 60], [12, 20, 30, 18], [24, 40, 60, 36], [36, 45, 60, 45], [48, 60, 80, 60]]);
+    return build(r, { c: K, s: 'soal-cerita', l: 4, q: `Sebuah perjalanan dibagi menjadi tiga bagian yang sama panjang. Bagian pertama ditempuh dengan kecepatan ${v1} km/jam, bagian kedua ${v2} km/jam, dan bagian ketiga ${v3} km/jam. Kecepatan rata-rata seluruh perjalanan adalah … km/jam.`,
+      e: `Jarak sama → rata-rata harmonik: 3 ÷ (1/${v1} + 1/${v2} + 1/${v3}) = ${avg}. Rata-rata biasa (${nf((v1 + v2 + v3) / 3)}) salah karena waktu tiap bagian berbeda.` },
+      avg, [(v1 + v2 + v3) / 3, (v1 + v3) / 2, avg + 5, avg - 3, v2].map((x) => Math.round(x * 10) / 10));
+  });
+  add('soal-cerita', (r) => { // persentase bersyarat
+    const pw = r.pick([40, 45, 55, 60, 65]), aw = r.pick([20, 25, 30, 35]), am = r.pick([30, 40, 45, 50]);
+    const pass = (pw * aw + (100 - pw) * am) / 100;
+    const reverse = r.chance(0.5);
+    const pc = (x) => nf(Math.round(x * 10) / 10) + '%';
+    if (!reverse) {
+      return build(r, { c: K, s: 'soal-cerita', l: 3, q: `Dari seluruh pendaftar beasiswa, ${pw}% perempuan. Sebanyak ${aw}% pendaftar perempuan dan ${am}% pendaftar laki-laki lolos seleksi. Persentase pendaftar yang lolos dari seluruh pendaftar adalah …`,
+        e: `${pw}% × ${aw}% + ${100 - pw}% × ${am}% = ${nf((pw * aw) / 100)}% + ${nf(((100 - pw) * am) / 100)}% = ${pc(pass)}. Rata-rata biasa ${(aw + am) / 2}% salah karena proporsi kelompok berbeda.` },
+        pass, [(aw + am) / 2, aw + am, pass + 5, pass - 5, (pw * aw) / 100], pc);
+    }
+    const share = ((pw * aw) / 100 / pass) * 100;
+    return build(r, { c: K, s: 'soal-cerita', l: 4, q: `Dari seluruh pendaftar beasiswa, ${pw}% perempuan. Sebanyak ${aw}% pendaftar perempuan dan ${am}% pendaftar laki-laki lolos seleksi. Di antara peserta yang lolos, persentase perempuan adalah …`,
+      e: `Yang lolos = ${pw}%·${aw}% + ${100 - pw}%·${am}% = ${nf(pass)}% dari pendaftar. Perempuan lolos = ${nf((pw * aw) / 100)}%. Proporsi = ${nf((pw * aw) / 100)} ÷ ${nf(pass)} ≈ ${pc(share)}.` },
+      share, [pw, aw, (aw / (aw + am)) * 100, share + 8, share - 8], pc);
+  });
+
+  // ---------- PELUANG SULIT ----------
+  add('peluang', (r) => {
+    const t = r.int(0, 4);
+    if (t === 0) { // minimal satu merah, ambil 3
+      const m = r.int(2, 6), n = r.int(3, 7);
+      const tot = C(m + n, 3), none = C(n, 3);
+      const ans = frac(tot - none, tot);
+      return build(r, { c: K, s: 'peluang', l: 4, q: `Sebuah kotak berisi ${m} bola merah dan ${n} bola biru. Diambil 3 bola sekaligus secara acak. Peluang terambil paling sedikit satu bola merah adalah …`,
+        e: `Gunakan komplemen: P(tidak ada merah) = C(${n},3)/C(${m + n},3) = ${none}/${tot}. P(minimal satu merah) = 1 − ${none}/${tot} = ${ans}.` },
+        ans, [frac(none, tot), frac(m, m + n), frac(C(m, 1) * C(n, 2), tot), frac(tot - none + 1, tot), frac(3 * m, m + n)].filter((x) => x !== ans), String);
+    }
+    if (t === 1) { // berjajar, dua orang harus berdampingan / tidak berdampingan
+      const n = r.int(5, 7), together = 2 * fact(n - 1), apart = fact(n) - together;
+      const askApart = r.chance(0.5), ans = askApart ? apart : together;
+      return build(r, { c: K, s: 'peluang', l: askApart ? 4 : 3, q: `${n} orang termasuk Dewi dan Eka akan berfoto berjajar dalam satu baris. Banyak susunan jika Dewi dan Eka ${askApart ? 'tidak boleh' : 'harus'} berdampingan adalah …`,
+        e: `Berdampingan: anggap Dewi–Eka satu unit → (${n} − 1)! × 2 = ${together}. ${askApart ? `Tidak berdampingan = semua susunan − berdampingan = ${fact(n)} − ${together} = ${apart}.` : ''}` },
+        ans, [fact(n), fact(n - 1), askApart ? together : apart, ans / 2, ans + fact(n - 2)].filter((x) => x !== ans));
+    }
+    if (t === 2) { // panitia minimal satu wanita
+      const p = r.int(4, 8), w = r.int(2, 5), k = r.pick([3, 4]);
+      const ans = C(p + w, k) - C(p, k);
+      return build(r, { c: K, s: 'peluang', l: 3, q: `Dari ${p} pria dan ${w} wanita akan dibentuk panitia beranggotakan ${k} orang. Banyak cara membentuk panitia jika paling sedikit ada satu wanita adalah …`,
+        e: `Semua kemungkinan C(${p + w},${k}) = ${C(p + w, k)} dikurangi panitia tanpa wanita C(${p},${k}) = ${C(p, k)} → ${ans}.` },
+        ans, [C(p + w, k), C(w, 1) * C(p + w - 1, k - 1), C(p, k), ans + w, C(w, 1) * C(p, k - 1)].filter((x) => x !== ans));
+    }
+    if (t === 3) { // bilangan genap tiga digit berbeda
+      const pool = r.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, r.int(5, 7)).sort((x, y) => x - y);
+      if (!pool.some((d) => d % 2 === 0)) throw new Error('retry');
+      let cnt = 0;
+      for (const a of pool) for (const b of pool) for (const c of pool) if (a !== 0 && a !== b && b !== c && a !== c && c % 2 === 0) cnt++;
+      const allAny = pool.filter((d) => d !== 0).length * (pool.length - 1) * (pool.length - 2);
+      return build(r, { c: K, s: 'peluang', l: 4, q: `Dari angka-angka ${pool.join(', ')} akan dibentuk bilangan genap tiga angka dengan angka-angka berbeda. Banyak bilangan yang dapat dibentuk adalah …`,
+        e: `Hitung per kasus angka satuan (harus genap) dan ratusan (tidak boleh 0, tidak boleh sama). Totalnya ${cnt} bilangan. ${pool.includes(0) ? 'Pisahkan kasus satuan = 0 dan satuan ≠ 0 karena 0 tidak boleh di depan.' : ''}` },
+        cnt, [allAny, Math.round(allAny / 2), cnt + pool.length, cnt - 2, pool.length ** 3].filter((x) => x !== cnt && x > 0));
+    }
+    const n = r.int(5, 8); // melingkar
+    const both = r.chance(0.5), ans = both ? 2 * fact(n - 2) : fact(n - 1);
+    return build(r, { c: K, s: 'peluang', l: 3, q: `${n} orang duduk mengelilingi meja bundar${both ? ', dengan dua orang tertentu harus duduk berdampingan' : ''}. Banyak susunan duduk yang berbeda adalah …`,
+      e: both ? `Satukan dua orang menjadi satu unit: (${n - 1} − 1)! × 2 = ${ans}.` : `Permutasi siklis: (${n} − 1)! = ${ans}.` },
+      ans, [fact(n), fact(n - 1) * (both ? 1 : 2), fact(n - 2), ans * 2, ans / 2].filter((x) => x !== ans));
+  });
+
+  // ---------- GEOMETRI SULIT ----------
+  add('geometri', (r) => {
+    const t = r.int(0, 2);
+    if (t === 0) {
+      const [p, l, tt, d] = r.pick([[1, 2, 2, 3], [2, 3, 6, 7], [1, 4, 8, 9], [2, 6, 9, 11], [6, 6, 7, 11], [4, 4, 7, 9], [2, 10, 11, 15], [3, 4, 12, 13]]);
+      const k = r.int(1, 3);
+      return build(r, { c: K, s: 'geometri', l: 3, q: `Sebuah balok berukuran ${p * k} cm × ${l * k} cm × ${tt * k} cm. Panjang diagonal ruangnya adalah … cm.`,
+        e: `Diagonal ruang = √(p² + l² + t²) = √(${(p * k) ** 2} + ${(l * k) ** 2} + ${(tt * k) ** 2}) = √${(d * k) ** 2} = ${d * k}.` },
+        d * k, [Math.round(Math.sqrt((p * k) ** 2 + (l * k) ** 2)), (p + l + tt) * k, d * k + 1, d * k - 1, (d + 2) * k].filter((x) => x !== d * k));
+    }
+    if (t === 1) {
+      const sd = r.pick([14, 28, 42]);
+      const ans = sd * sd - (22 / 7) * (sd / 2) ** 2;
+      return build(r, { c: K, s: 'geometri', l: 3, q: `Sebuah lingkaran terletak di dalam persegi bersisi ${sd} cm dan menyinggung keempat sisinya. Luas daerah di dalam persegi tetapi di luar lingkaran adalah … cm² (π = 22/7).`,
+        e: `Jari-jari = ${sd / 2}. Luas persegi ${sd * sd}, luas lingkaran ${nf((22 / 7) * (sd / 2) ** 2)}. Selisih = ${nf(ans)} cm².` },
+        ans, [(22 / 7) * (sd / 2) ** 2, sd * sd - (22 / 7) * sd * sd, ans * 2, ans / 2, sd * sd - (22 / 7) * sd].map((x) => Math.round(x)).filter((x) => x > 0 && x !== ans));
+    }
+    const a = r.int(2, 5), b = a + r.int(1, 4), A1 = r.int(2, 12) * a * a;
+    const ans = (A1 / (a * a)) * b * b;
+    return build(r, { c: K, s: 'geometri', l: 3, q: `Dua segitiga sebangun memiliki perbandingan sisi-sisi yang bersesuaian ${a} : ${b}. Jika luas segitiga kecil ${A1} cm², luas segitiga besar adalah … cm².`,
+      e: `Perbandingan luas = kuadrat perbandingan sisi = ${a * a} : ${b * b}. Luas besar = ${A1} × ${b * b}/${a * a} = ${ans}. Jebakan: memakai perbandingan sisi langsung (${(A1 * b) / a}).` },
+      ans, [(A1 * b) / a, ans / 2, ans + A1, (A1 * b * b * b) / (a * a * a), ans - a].map((x) => Math.round(x * 100) / 100).filter((x) => x !== ans));
+  });
+
+  // ---------- STATISTIKA SULIT ----------
+  add('statistika', (r) => {
+    if (r.chance(0.5)) {
+      for (let t = 0; t < 40; t++) {
+        const n = r.int(10, 40), m = r.int(60, 80), x = r.int(40, 70), y = x + r.pick([10, 20, 30, -10]);
+        const nm = m + (y - x) / n;
+        if (Math.abs(nm * 100 - Math.round(nm * 100)) > 1e-9) continue;
+        return build(r, { c: K, s: 'statistika', l: 3, q: `Rata-rata nilai ${n} peserta tercatat ${m}. Ternyata satu nilai tertulis ${x}, padahal seharusnya ${y}. Rata-rata yang benar adalah …`,
+          e: `Total berubah ${y - x}. Rata-rata baru = ${m} + (${y - x})/${n} = ${nf(nm)}.` },
+          nm, [m + (y - x), m + (x - y) / n, m, nm + 1, (m * n + y) / (n + 1)].map((v) => Math.round(v * 100) / 100));
+      }
+      throw new Error('retry');
+    }
+    for (let t = 0; t < 40; t++) {
+      const k = r.int(3, 6), scores = Array.from({ length: k }, () => r.int(60, 90)), T = r.int(72, 85);
+      const need = T * (k + 1) - S.sum(scores);
+      if (need < 55 || need > 100) continue;
+      return build(r, { c: K, s: 'statistika', l: 3, q: `Nilai ${k} ujian pertama seorang mahasiswa adalah ${scores.join(', ')}. Agar rata-rata ${k + 1} ujian menjadi ${T}, nilai minimal ujian terakhir adalah …`,
+        e: `Total yang dibutuhkan ${T} × ${k + 1} = ${T * (k + 1)}. Sudah terkumpul ${S.sum(scores)}. Nilai terakhir = ${need}.` },
+        need, [T, need + k, need - k, Math.round(S.sum(scores) / k), need + 5]);
+    }
+    throw new Error('retry');
+  });
+
+  // ---------- PERBANDINGAN KUANTITATIF SULIT ----------
+  add('perbandingan-kuantitatif', (r) => {
+    const t = r.int(0, 5);
+    const it = (q, a, e) => Object.assign(pqItem(q, a, e), { l: t === 3 || t === 5 ? 4 : 3 });
+    if (t === 0) return it('Diketahui −1 < x < 0.<br>P = x²<br>Q = x³', 0, 'x negatif: x² positif, x³ negatif. Maka P > Q.');
+    if (t === 1) return it('Diketahui x < 0.<br>P = x²<br>Q = −x', 3, 'x = −½ → P = ¼ < Q = ½; x = −2 → P = 4 > Q = 2. Tidak dapat ditentukan.');
+    if (t === 2) { const a = r.pick([0.1, 0.5, 0.2]), b = r.int(2, 9) * 100; return it(`P = ${nf(a)}% dari ${b}<br>Q = ${b / 100}% dari ${nf(a)}`, a * b / 100 > (b / 100) * a / 100 ? 0 : 1, `P = ${nf((a * b) / 100)}, Q = ${nf(((b / 100) * a) / 100)}. P > Q.`); }
+    if (t === 3) return it('a dan b adalah dua bilangan prima berbeda yang kurang dari 10.<br>P = a + b<br>Q = 10', 3, 'Pasangan (2, 3) → 5 < 10; (3, 7) → 10 = 10; (5, 7) → 12 > 10. Tidak dapat ditentukan.');
+    if (t === 4) { const n = r.int(5, 15); return it(`P = rata-rata bilangan 1, 2, 3, …, ${n}<br>Q = median bilangan 1, 2, 3, …, ${n}`, 2, `Data berselisih tetap simetris, sehingga rata-rata = median = ${nf((n + 1) / 2)}.`); }
+    const [p, q] = r.pick([[2, 3], [1, 4], [2, 5], [3, 4]]);
+    return it(`Diketahui x² − ${p + q}x + ${p * q} = 0.<br>P = x<br>Q = ${nf((p + q) / 2)}`, 3, `Akar-akarnya x = ${p} atau x = ${q}; satu di bawah ${nf((p + q) / 2)} dan satu di atasnya. Tidak dapat ditentukan.`);
+  });
+
+  // ---------- SILOGISME TIGA PREMIS ----------
+  add('silogisme', (r) => {
+    const w = r.shuffle(ABSTRAK).slice(0, 4);
+    const [X, Y, Z, W] = w;
+    const f = r.int(0, 4);
+    if (f === 0) return Object.assign(silo(r, [`semua ${X} adalah ${Y}`, `tidak ada ${Y} yang merupakan ${Z}`, `sebagian ${W} adalah ${Z}`], cap(`sebagian ${W} bukan ${X}`),
+      [`Sebagian ${W} adalah ${X}`, `Tidak ada ${W} yang merupakan ${X}`, `Sebagian ${X} adalah ${Z}`, `Semua ${W} adalah ${Y}`], `Dari premis 1–2: tidak ada ${X} yang ${Z}. ${W} yang termasuk ${Z} pasti bukan ${X}, jadi sebagian ${W} bukan ${X}. "Tidak ada ${W} yang ${X}" terlalu kuat.`), { l: 4 });
+    const [p, np, q, nq, rr, nr] = r.pick(COND);
+    if (f === 1) return Object.assign(silo(r, [`jika ${p}, maka ${q}`, `jika ${nr}, maka ${nq}`, p], cap(rr), [cap(nr), cap(np), cap(`${rr} dan ${nq}`), cap(`jika ${rr}, maka ${p}`)], `Premis 2 setara dengan "jika ${q}, maka ${rr}" (kontraposisi). Rantai: ${p} → ${q} → ${rr}. Karena ${p} benar, maka ${rr}.`), { l: 4 });
+    if (f === 2) return Object.assign(silo(r, [`${p} atau ${q}`, `jika ${p}, maka ${rr}`, `jika ${q}, maka ${rr}`], cap(rr), [cap(p), cap(q), cap(nr), cap(`${p} dan ${q}`)], `Dilema konstruktif: kedua kemungkinan (${p} atau ${q}) sama-sama menghasilkan ${rr}.`), { l: 3 });
+    if (f === 3) return Object.assign(silo(r, [`jika ${p}, maka ${q}`, `jika ${q}, maka ${rr}`, nr], cap(`${np} dan ${nq}`), [cap(`${np} tetapi ${q}`), cap(`${p} dan ${nq}`), cap(`jika ${np}, maka ${nr}`), cap(`${q} dan ${nr}`)], `${nr} → ${nq} (modus tollens premis 2) → ${np} (modus tollens premis 1). Keduanya pasti.`), { l: 4 });
+    return Object.assign(silo(r, [`semua ${X} adalah ${Y}`, `sebagian ${W} bukan ${Y}`], cap(`sebagian ${W} bukan ${X}`), [`Sebagian ${W} adalah ${X}`, `Tidak ada ${W} yang merupakan ${X}`, `Sebagian ${X} bukan ${W}`, `Semua ${W} adalah ${X}`], `${W} yang bukan ${Y} tidak mungkin ${X} (karena semua ${X} adalah ${Y}). Jadi sebagian ${W} bukan ${X}.`), { l: 4 });
+  });
+
+  // ---------- LOGIKA PROPOSISI SULIT ----------
+  const QCOND = [['pendaftar', 'lolos tes tertulis', 'mengikuti wawancara', 'tidak mengikuti wawancara'], ['mahasiswa', 'menerima beasiswa', 'menulis laporan bulanan', 'tidak menulis laporan bulanan'], ['pegawai', 'bekerja lembur', 'menerima insentif', 'tidak menerima insentif'], ['peserta', 'datang terlambat', 'mengisi daftar hadir khusus', 'tidak mengisi daftar hadir khusus']];
+  add('logika-proposisi', (r) => {
+    const f = r.int(0, 3);
+    const [p, np, q, nq, rr, nr] = r.pick(COND);
+    if (f === 0) {
+      const [x, y, z, nz] = r.pick(QCOND);
+      return Object.assign(neg(r, `Ingkaran dari pernyataan "Semua ${x} yang ${y} ${z}" adalah …`, `Ada ${x} yang ${y} dan ${nz}`, [`Semua ${x} yang ${y} ${nz}`, `Ada ${x} yang tidak ${y} dan ${z}`, `Semua ${x} yang tidak ${y} ${nz}`, `Tidak ada ${x} yang ${y}`], `"Semua x yang A adalah B" ≡ ∀x (A → B). Ingkarannya ∃x (A ∧ ¬B): ada ${x} yang ${y} dan ${nz}.`), { l: 4 });
+    }
+    if (f === 1) return Object.assign(neg(r, `Ingkaran dari "${cap(p)} jika dan hanya jika ${q}" adalah …`, cap(`${p} dan ${nq}, atau ${q} dan ${np}`), [cap(`${np} jika dan hanya jika ${nq}`), cap(`${p} dan ${q}`), cap(`${np} dan ${nq}`), cap(`jika ${p}, maka ${nq}`)], `p ↔ q benar bila keduanya sama nilai. Ingkarannya: tepat satu yang benar, yaitu (p ∧ ¬q) ∨ (q ∧ ¬p).`), { l: 4 });
+    if (f === 2) return Object.assign(neg(r, `Pernyataan yang setara dengan "Jika ${p}, maka ${q} dan ${rr}" adalah …`, cap(`jika ${nq} atau ${nr}, maka ${np}`), [cap(`jika ${nq} dan ${nr}, maka ${np}`), cap(`jika ${q} dan ${rr}, maka ${p}`), cap(`jika ${np}, maka ${nq} atau ${nr}`), cap(`${p} dan ${nq} dan ${nr}`)], `Kontraposisi: p → (q ∧ r) ≡ ¬(q ∧ r) → ¬p ≡ (¬q ∨ ¬r) → ¬p.`), { l: 4 });
+    return Object.assign(neg(r, `Ingkaran dari "Jika ${p}, maka ${q} atau ${rr}" adalah …`, cap(`${p}, tetapi ${nq} dan ${nr}`), [cap(`${p}, tetapi ${nq} atau ${nr}`), cap(`jika ${np}, maka ${nq} dan ${nr}`), cap(`${np} dan ${q}`), cap(`jika ${q} atau ${rr}, maka ${p}`)], `¬(p → (q ∨ r)) ≡ p ∧ ¬(q ∨ r) ≡ p ∧ ¬q ∧ ¬r.`), { l: 4 });
+  });
+
+  // ---------- URUTAN TIDAK LANGSUNG (solver) ----------
+  add('urutan', (r) => {
+    const n = r.pick([6, 7]);
+    const ppl = r.shuffle(NAMA).slice(0, n); // urutan benar, indeks 0 = paling atas
+    const [more, less, top, bot] = r.pick(ATTR);
+    const g = r.int(1, n - 3); // pasangan (g, g+1) tidak diberikan langsung
+    const pairs = [];
+    for (let i = 0; i < n - 1; i++) if (i !== g) pairs.push([i, i + 1]);
+    for (let t = 0; t < 2; t++) { const i = r.int(0, n - 3); pairs.push([i, i + 2]); }
+    const all = permIdx(n);
+    const ok = (perm) => pairs.every(([i, j]) => perm.indexOf(i) < perm.indexOf(j)) && perm.indexOf(g) === g;
+    if (all.filter(ok).length !== 1) throw new Error('retry');
+    const txt = r.shuffle(pairs.map(([i, j]) => (r.chance(0.5) ? `${ppl[i]} ${more} ${ppl[j]}` : `${ppl[j]} ${less} ${ppl[i]}`)));
+    txt.splice(r.int(0, txt.length), 0, `Jika diurutkan dari yang ${top}, ${ppl[g]} berada di urutan ke-${g + 1}`);
+    const k = r.int(2, n - 1), ans = ppl[k - 1];
+    const o = r.shuffle([ans, ...r.shuffle(ppl.filter((x) => x !== ans)).slice(0, 4)]);
+    return { c: P, s: 'urutan', l: n === 7 ? 4 : 3, q: `${txt.map((c) => c + '.').join('<br>')}<br><br>Jika diurutkan dari yang ${top}, siapakah yang berada di urutan ke-${k}?`, o, a: o.indexOf(ans),
+      e: `Petunjuk perbandingan membentuk dua rantai: ${ppl.slice(0, g + 1).join(' > ')} dan ${ppl.slice(g + 1).join(' > ')}. Karena ${ppl[g]} di urutan ke-${g + 1}, tepat ${g} orang di atasnya (semuanya dari rantai pertama), sehingga seluruh rantai kedua berada di bawahnya. Urutan lengkap: ${ppl.join(' > ')}. Urutan ke-${k}: ${ans}.` };
+  });
+
+  // ---------- PENALARAN ANALITIS (generator + solver) ----------
+  const CTX = [['mempresentasikan proposal secara bergiliran', 'tampil', 'peserta'], ['mengikuti wawancara beasiswa secara bergiliran', 'diwawancarai', 'peserta'], ['menyampaikan laporan dalam rapat secara bergiliran', 'melapor', 'staf']];
+  add('analitis', (r) => {
+    const n = r.pick([5, 6]);
+    const names = r.shuffle(['Ari', 'Bima', 'Citra', 'Dina', 'Eko', 'Fani', 'Gilang', 'Hesti']).slice(0, n);
+    const target = r.shuffle([...Array(n).keys()]); // target[pos] = entity
+    const posOf = (perm, e) => perm.indexOf(e);
+    const [ctx, vb, who] = r.pick(CTX);
+    const all = permIdx(n);
+    const cons = [];
+    const make = () => {
+      const t = r.int(0, 5), x = r.int(0, n - 1); let y = r.int(0, n - 1); if (y === x) y = (x + 1) % n;
+      const px = posOf(target, x), py = posOf(target, y);
+      if (t === 0 && px < py) return { f: (p) => posOf(p, x) < posOf(p, y), s: `${names[x]} ${vb} sebelum ${names[y]}.` };
+      if (t === 1 && py === px + 1) return { f: (p) => posOf(p, y) === posOf(p, x) + 1, s: `${names[y]} ${vb} tepat setelah ${names[x]}.` };
+      if (t === 2) return { f: (p) => posOf(p, x) === px, pos: 1, s: `${names[x]} ${vb} pada urutan ke-${px + 1}.` };
+      if (t === 3) { const k = r.int(0, n - 1); if (k !== px) return { f: (p) => posOf(p, x) !== k, s: `${names[x]} tidak ${vb} pada urutan ke-${k + 1}.` }; }
+      if (t === 4 && Math.abs(px - py) > 1) return { f: (p) => Math.abs(posOf(p, x) - posOf(p, y)) > 1, s: `${names[x]} dan ${names[y]} tidak ${vb} berurutan.` };
+      if (t === 5 && Math.abs(px - py) === 2) return { f: (p) => Math.abs(posOf(p, x) - posOf(p, y)) === 2, s: `Tepat ada satu ${who} yang ${vb} di antara ${names[x]} dan ${names[y]}.` };
+      return null;
+    };
+    let sols = all;
+    for (let g = 0; g < 90 && sols.length > 1; g++) {
+      const c = make();
+      if (!c || cons.some((k) => k.s === c.s)) continue;
+      if (c.pos && cons.some((k) => k.pos)) continue; // paling banyak satu petunjuk posisi langsung
+      const nxt = sols.filter(c.f);
+      if (nxt.length === sols.length) continue; // tidak informatif
+      cons.push(c); sols = nxt;
+    }
+    if (sols.length !== 1 || cons.length < 4 || cons.length > 9) throw new Error('retry');
+    const k = r.int(0, n - 1), ans = names[target[k]];
+    const o = r.shuffle([ans, ...r.shuffle(names.filter((x) => x !== ans)).slice(0, 4)]);
+    return { c: P, s: 'analitis', l: n === 6 ? 4 : 3, q: `${n} ${who}, yaitu ${names.slice(0, -1).join(', ')}, dan ${names[n - 1]}, ${ctx} pada urutan 1 sampai ${n} (setiap urutan diisi satu orang), dengan ketentuan:<br>${cons.map((c) => '• ' + c.s).join('<br>')}<br><br>Siapakah yang ${vb} pada urutan ke-${k + 1}?`, o, a: o.indexOf(ans),
+      e: `Mulai dari petunjuk yang pasti (posisi tetap dan "tepat setelah"), gabungkan menjadi blok, lalu uji sisa kemungkinan. Satu-satunya susunan yang memenuhi semua ketentuan: ${target.map((e, i) => `${i + 1}. ${names[e]}`).join(', ')}. Jadi urutan ke-${k + 1} adalah ${ans}.` };
+  });
+
+  // ---------- FIGURAL: dua atribut sekaligus ----------
+  const arrowDots = (ang, dots, fill) => svg(`<circle cx="32" cy="32" r="27" fill="${fill ? 'currentColor' : 'none'}" fill-opacity="${fill ? 0.16 : 0}" stroke="currentColor" stroke-width="2.5"/><g transform="rotate(${ang} 32 32)"><line x1="32" y1="40" x2="32" y2="15" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M24 23 L32 13 L40 23" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/></g>${Array.from({ length: dots }, (_, i) => `<circle cx="${32 - (dots - 1) * 4 + i * 8}" cy="50" r="2.8" fill="currentColor"/>`).join('')}`);
+  add('figural', (r) => {
+    const step = r.pick([45, 90, -45, 135]), a0 = r.pick([0, 90, 180]), d0 = r.int(1, 2);
+    const ang = (i) => (((a0 + i * step) % 360) + 360) % 360, dots = (i) => ((d0 + i - 1) % 4) + 1, fill = (i) => i % 2 === 1;
+    const frames = [0, 1, 2, 3].map((i) => arrowDots(ang(i), dots(i), fill(i)));
+    const key = (a, d, f) => `${a}|${d}|${f}`;
+    const ansK = key(ang(4), dots(4), fill(4));
+    const cands = [[ang(4), dots(4), fill(4)], [ang(4), dots(4) % 4 + 1, fill(4)], [ang(5), dots(4), fill(4)], [ang(4), dots(4), !fill(4)], [(ang(4) + 180) % 360, dots(4), fill(4)], [ang(3), dots(3), fill(4)], [ang(4), dots(3), !fill(4)]];
+    const seen2 = new Set(), opts = [];
+    for (const c of cands) { const k2 = key(...c); if (!seen2.has(k2)) { seen2.add(k2); opts.push(c); } if (opts.length === 5) break; }
+    const sh = r.shuffle(opts);
+    return { c: P, s: 'figural', l: 4, q: figStem(frames), qh: 1, h: 1, o: sh.map((c) => arrowDots(...c)), a: sh.findIndex((c) => key(...c) === ansK),
+      e: `Tiga atribut berubah bersamaan: panah berputar ${Math.abs(step)}° ${step > 0 ? 'searah' : 'berlawanan arah'} jarum jam, jumlah titik bertambah 1 (setelah 4 kembali ke 1), dan arsiran berselang-seling. Gambar kelima: sudut ${ang(4)}°, ${dots(4)} titik, ${fill(4) ? 'berarsir' : 'kosong'}.` };
+  });
+
+  // ---------- BISNIS SULIT ----------
+  add('bisnis', (r) => {
+    const t = r.int(0, 2);
+    if (t === 0) { // NPV
+      const I = r.int(10, 30) * 10, u = r.int(5, 20) * 10, v = r.int(5, 20) * 10;
+      const C1 = u * 1.1, C2 = v * 1.21, npv = -I + u + v;
+      const lab = (x) => (x < 0 ? '−' : '') + 'Rp' + nf(Math.abs(Math.round(x * 100) / 100)) + ' juta';
+      return build(r, { c: K, s: 'bisnis', l: 4, q: `Sebuah proyek membutuhkan investasi awal Rp${nf(I)} juta dan menghasilkan arus kas Rp${nf(C1)} juta pada akhir tahun pertama serta Rp${nf(C2)} juta pada akhir tahun kedua. Dengan tingkat diskonto 10% per tahun, nilai sekarang bersih (NPV) proyek adalah …`,
+        e: `NPV = −${nf(I)} + ${nf(C1)}/1,1 + ${nf(C2)}/1,21 = −${nf(I)} + ${nf(u)} + ${nf(v)} = ${lab(npv)}. Jebakan: menjumlahkan arus kas tanpa diskonto (${lab(-I + C1 + C2)}).` },
+        npv, [-I + C1 + C2, -I + u + C2, npv + 10, npv - 10, u + v], lab);
+    }
+    if (t === 1) { // BEP dengan target laba
+      const c = r.int(2, 10) * 1000, V = r.int(5, 20) * 1000, F = r.int(5, 50) * c * 10, tgt = r.int(2, 20) * c * 10;
+      const u = (F + tgt) / c;
+      return build(r, { c: K, s: 'bisnis', l: 3, q: `Biaya tetap sebuah usaha ${rp(F)} per bulan, harga jual ${rp(V + c)} per unit, dan biaya variabel ${rp(V)} per unit. Agar laba bulanan ${rp(tgt)}, penjualan minimal adalah …`,
+        e: `Unit = (biaya tetap + target laba) ÷ margin kontribusi = (${rp(F)} + ${rp(tgt)}) ÷ ${rp(c)} = ${nf(u)} unit.` },
+        u, [F / c, tgt / c, (F + tgt) / (V + c), u + 100, u - 50], (x) => nf(Math.round(x)) + ' unit');
+    }
+    const m = r.pick([25, 40, 50, 60]), d = r.pick([10, 20, 25, 30]);
+    const net = Math.round(((1 + m / 100) * (1 - d / 100) - 1) * 1000) / 10;
+    return build(r, { c: K, s: 'bisnis', l: 3, q: `Sebuah toko menaikkan harga ${m}% dari harga beli, lalu memberi diskon ${d}% dari harga label. Keuntungan terhadap harga beli adalah …`,
+      e: `Faktor harga jual = ${nf(1 + m / 100)} × ${nf(1 - d / 100)} = ${nf((1 + m / 100) * (1 - d / 100))} → ${pctLab(net)} dari harga beli. Jebakan: ${m}% − ${d}% = ${m - d}%.` },
+      pctLab(net), [pctLab(m - d), pctLab(net + 5), pctLab(net - 5), pctLab(m), pctLab(-net)], String);
+  });
+
   /* ---------- Gabungkan generator yang relevan ke subtopik lain ---------- */
   GEN.operasi.push(GEN.aritmetika[2], GEN.aritmetika[3], GEN.aritmetika[4]);
   GEN.statistika.push(GEN['soal-cerita'][5], GEN['soal-cerita'][6]);
 
   /* ---------- API ---------- */
-  function generate(sub, r) {
+  /** Buat satu soal untuk subtopik `sub`. minL (1–4) meminta tingkat kesulitan minimal;
+   *  bila tidak ada generator setingkat itu, dikembalikan soal tersulit yang ditemukan. */
+  function generate(sub, r, minL = 1) {
     const list = GEN[sub];
     if (!list) return null;
-    for (let t = 0; t < 25; t++) {
+    let best = null;
+    for (let t = 0; t < (minL > 1 ? 80 : 25); t++) {
       try {
         const it = r.pick(list)(r);
-        if (it && it.o && it.o.length >= 2 && it.a >= 0) { it.s = sub; return it; }
+        if (it && it.o && it.o.length >= 2 && it.a >= 0) {
+          it.s = sub;
+          if ((it.l || 2) >= minL) return it;
+          if (!best || (it.l || 2) > (best.l || 2)) best = it;
+        }
       } catch (e) { /* coba lagi */ }
     }
-    return null;
+    return best;
   }
   S.GEN = GEN;
   S.generate = generate;
