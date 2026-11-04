@@ -1,0 +1,24 @@
+{
+  "name": "Siap S2: Simulasi Tes Masuk S2 & LPDP",
+  "short_name": "Siap S2",
+  "description": "Simulasi tes masuk S2 UI, UGM, ITB dan Tes Bakat Skolastik LPDP, bisa dipakai offline.",
+  "lang": "id",
+  "id": "./",
+  "start_url": "./#beranda",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f1f3f7",
+  "theme_color": "#c22a68",
+  "categories": ["education"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Simulasi ujian", "url": "./#simulasi", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "English Booster", "url": "./#english", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Latihan per topik", "url": "./#latihan", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

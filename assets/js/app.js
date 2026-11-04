@@ -79,6 +79,7 @@
         </form>
       </section>
 
+      ${isStandalone() ? '' : `<section class="install-card only-touch"><div><strong>Pakai seperti aplikasi di HP</strong><p class="small">Pasang Siap S2 ke layar utama Android agar terbuka layar penuh dan tetap bisa dipakai tanpa internet.</p></div><button type="button" class="btn btn-primary btn-small" data-act="install">Pasang di HP</button></section>`}
       <section class="home-grid">
         <div class="panel">
           <h2>Kesiapan per kemampuan</h2>
@@ -461,6 +462,16 @@
       S.toast(`Tema: ${next === 'system' ? 'ikuti sistem' : next === 'light' ? 'terang' : 'gelap'}`);
     },
     menu: () => document.body.classList.toggle('menu-open'),
+    'leave-exam': (el) => { S.closeModal(); S._allowLeave = true; location.hash = '#' + el.dataset.to; },
+    install: async () => {
+      if (installPrompt) {
+        installPrompt.prompt();
+        try { const c = await installPrompt.userChoice; if (c.outcome === 'accepted') S.toast('Memasang Siap S2…'); } catch (e) { /* abaikan */ }
+        installPrompt = null; document.body.classList.remove('can-install');
+        return;
+      }
+      S.modal(`<h3>Pasang Siap S2 di HP Android</h3><ol class="rules"><li>Buka situs ini di <b>Google Chrome</b>.</li><li>Ketuk menu <b>⋮</b> di kanan atas.</li><li>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</li><li>Buka Siap S2 dari ikon di layar utama. Setelah dibuka sekali saat online, aplikasi tetap bisa dipakai tanpa internet.</li></ol><p class="muted small">Jika menu tersebut tidak muncul, pastikan alamatnya diawali https:// (misalnya situs GitHub Pages), bukan dibuka dari halaman pratinjau.</p><div class="modal-actions"><button type="button" class="btn btn-primary" data-act="modal-close">Mengerti</button></div>`);
+    },
     backup: () => {
       const data = {};
       S.store.keys().forEach((k) => { if (k !== 'active') data[k] = S.store.get(k); });
@@ -485,7 +496,16 @@
   S.route = function () {
     let r = (location.hash || '#beranda').slice(1);
     if (!P[r]) r = 'beranda';
-    if (r !== 'ujian' && S.examRunning()) S.leaveExam();
+    if (r !== 'ujian' && S.examRunning()) {
+      if (!S._allowLeave) {
+        // Tombol Back di Android/browser: jangan langsung keluar dari ujian.
+        try { history.replaceState(null, '', '#ujian'); } catch (e) { /* abaikan */ }
+        S.modal(`<h3>Keluar dari ujian?</h3><p>Jawabanmu tersimpan, tetapi <b>timer tetap berjalan</b> seperti ujian sungguhan. Kamu bisa melanjutkan dari Beranda.</p><div class="modal-actions"><button type="button" class="btn btn-primary" data-act="modal-close">Tetap di ujian</button><button type="button" class="btn btn-ghost" data-act="leave-exam" data-to="${r}">Keluar sementara</button></div>`);
+        return;
+      }
+      S._allowLeave = false;
+      S.leaveExam();
+    }
     S.closeModal();
     document.body.classList.remove('menu-open');
     document.body.dataset.route = r;
@@ -507,9 +527,27 @@
     const b = S.$('#theme-btn'); if (b) b.textContent = t === 'system' ? 'Tema: sistem' : t === 'light' ? 'Tema: terang' : 'Tema: gelap';
   }
 
+  /* ================= PWA (Android) ================= */
+  let installPrompt = null;
+  function isStandalone() {
+    try { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; } catch (e) { return false; }
+  }
+  function setupPwa() {
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; document.body.classList.add('can-install'); });
+    window.addEventListener('appinstalled', () => { installPrompt = null; document.body.classList.remove('can-install'); S.toast('Siap S2 terpasang di layar utama.'); });
+    if (isStandalone()) document.body.classList.add('standalone');
+    const secure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    let framed = false;
+    try { framed = window.self !== window.top; } catch (e) { framed = true; }
+    if ('serviceWorker' in navigator && secure && !framed) {
+      try { navigator.serviceWorker.register('sw.js').catch(() => { /* abaikan: hosting tanpa sw.js */ }); } catch (e) { /* abaikan */ }
+    }
+  }
+
   /* ================= boot ================= */
   function boot() {
     S.tts.init();
+    setupPwa();
     applyTheme();
     document.addEventListener('click', (e) => {
       const el = e.target.closest('[data-act]');

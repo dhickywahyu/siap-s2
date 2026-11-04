@@ -22,6 +22,7 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 | **Beasiswa & aturan** | Syarat UI/UGM/ITB, aturan LPDP, kerangka esai, latihan wawancara bertimer (28 pertanyaan), LGD, esai on the spot, checklist dokumen. |
 | **Jalur MBA & Teknik** | Syarat MM FEB UI, MBA/IMBA FEB UGM, MBA/MSM SBM ITB, MTMI ITB, Magister Teknik Industri UI, MeTSi UGM; aturan kelas reguler LPDP; kalkulator selisih skor bahasa Inggris; rencana 12 minggu; soal kuantitatif bisnis & data (BEP, markup vs margin, pertumbuhan, tabel). |
 | **Analisis soal** | Format tiap tes dan perubahannya dari tahun ke tahun, peta topik, jatah waktu per soal, beserta sumbernya. |
+| **Siap untuk Android** | Bisa dipasang ke layar utama (PWA), bisa dibuka tanpa internet (service worker), layar tetap menyala saat ujian, konfirmasi tombol Back, navigasi bawah, tombol besar untuk jari. |
 | **Riwayat & progres** | Grafik skor, akurasi per topik, cadangan data untuk pindah perangkat. |
 
 | Layar ujian | Pembahasan |
@@ -33,7 +34,14 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 ### Online (paling mudah untuk teman-teman)
 Buka https://dhickywahyu.github.io/siap-s2/ (setelah GitHub Pages aktif). Progres tiap orang tersimpan di browser masing-masing.
 
-### Offline
+### Di HP Android (seperti aplikasi)
+1. Buka https://dhickywahyu.github.io/siap-s2/ di **Google Chrome**.
+2. Ketuk **Pasang di HP** di Beranda, atau menu **⋮ → Instal aplikasi / Tambahkan ke layar utama**.
+3. Buka dari ikon di layar utama. Setelah dibuka sekali saat online, aplikasi tetap jalan **tanpa internet**.
+
+Selama ujian layar tetap menyala, tombol Back meminta konfirmasi, dan lembar jawaban dibuka dari tombol "Lembar jawaban".
+
+### Offline di laptop
 1. Klik **Code → Download ZIP**, lalu ekstrak.
 2. Buka `index.html` dengan Chrome, Edge, atau Firefox.
 
@@ -60,6 +68,8 @@ Repositori ini sudah berisi workflow `.github/workflows/pages.yml`.
 ```
 siap-s2/
 ├── index.html              # aplikasi (satu halaman, tanpa build untuk dipakai)
+├── manifest.webmanifest    # identitas aplikasi untuk dipasang di HP
+├── sw.js                   # service worker: mode offline
 ├── assets/
 │   ├── css/app.css         # tampilan (token warna terang/gelap)
 │   └── js/

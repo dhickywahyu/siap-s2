@@ -71,7 +71,7 @@ kbd { font: 600 0.75rem var(--font-ui); border: 1px solid var(--line-strong); bo
 
 /* ---------- shell ---------- */
 .shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); min-height: 100vh; }
-.rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--sheet); border-right: 1px solid var(--line); padding: calc(18px + env(safe-area-inset-top, 0px)) 14px 18px max(14px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 14px; z-index: 20; }
+.rail { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; background: var(--sheet); border-right: 1px solid var(--line); padding: calc(18px + env(safe-area-inset-top, 0px)) 14px 18px max(14px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 14px; z-index: 20; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); padding: 4px 6px; }
 .brand-mark { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--ljk); display: grid; place-items: center; font: 800 0.86rem var(--font-display); color: var(--on-graphite); background: var(--graphite); box-shadow: 0 0 0 3px var(--sheet), 0 0 0 4.5px var(--ljk); }
 .brand-name { font: 700 1.2rem var(--font-display); letter-spacing: -0.02em; }
@@ -440,4 +440,38 @@ body.strict .qpane, body.strict .passage { -webkit-user-select: none; user-selec
   .kbd-hint { display: none; }
   .fc-word span { font-size: 1.8rem; }
   .score-num { font-size: 2.7rem; }
+}
+
+/* ---------- perangkat sentuh (Android) ---------- */
+button, a, label, select { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.install-btn { display: none; }
+body.can-install .install-btn { display: inline-flex; }
+body.standalone .install-btn { display: none; }
+.install-card { display: none; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; background: var(--ljk-soft); border: 1px solid var(--ljk); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; }
+.install-card p { margin: 4px 0 0; }
+@media (hover: none) and (pointer: coarse) {
+  .only-touch.install-card { display: flex; }
+  .opt:hover { border-color: var(--line); }
+  .opt.on:hover { border-color: var(--graphite); }
+  .btn:hover { border-color: var(--line-strong); }
+  .btn-ghost:hover { background: transparent; border-color: transparent; }
+  .btn-primary:hover { background: var(--ljk); border-color: var(--ljk); }
+  .exam-mini:hover { border-color: var(--line); }
+  .ljk-sheet .row:not(.cur):hover { background: none; }
+  .nav a:hover { background: none; color: var(--ink-2); }
+  .nav a.on:hover { background: var(--ljk-soft); color: var(--ink); }
+  .opt:active, .btn:active, .chip:active, .ljk-sheet .row:active { opacity: 0.75; }
+  .kbd-hint { display: none; }
+}
+@media (max-width: 960px) {
+  #toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  body.in-exam #toast { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .ljk-sheet .row { padding: 6px 4px; }
+  .ljk-sheet .b { width: 19px; height: 19px; font-size: 0.58rem; }
+  .ljk-sheet .bs { gap: 2px; }
+  .ljk-panel { width: min(340px, 92vw); }
+  .ljk-sheet .row .no { font-size: 0.8rem; }
+  .passage { max-height: 46dvh; }
+  .tabbar a, .tabbar button { min-height: 48px; justify-content: center; }
+  textarea, input[type="date"], input[type="number"], select { font-size: 16px; }
 }

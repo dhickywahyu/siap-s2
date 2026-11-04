@@ -116,7 +116,20 @@
   const visibleRange = (sess) => (sess.timing === 'section' ? [sess.sections[sess.secIdx].start, sess.sections[sess.secIdx].end] : [0, sess.q.length]);
   const remaining = (sess) => (sess.paused ? sess.left : sess.deadline ? Math.max(0, (sess.deadline - Date.now()) / 1000) : null);
 
+  // Layar tetap menyala selama ujian (Android/Chrome); diam-diam diabaikan jika tidak didukung.
+  let wake = null;
+  async function keepAwake(on) {
+    try {
+      if (on && !wake && 'wakeLock' in navigator && document.visibilityState === 'visible') {
+        wake = await navigator.wakeLock.request('screen');
+        wake.addEventListener('release', () => { wake = null; });
+      } else if (!on && wake) { const w = wake; wake = null; await w.release(); }
+    } catch (e) { wake = null; }
+  }
+  S.keepAwake = keepAwake;
+
   S.runExam = function (sess) {
+    keepAwake(true);
     cur = sess;
     saveActive(sess);
     document.body.classList.add('in-exam');
@@ -127,6 +140,7 @@
     tick = setInterval(onTick, 1000);
   };
   S.leaveExam = function () {
+    keepAwake(false);
     clearInterval(tick); tick = null;
     if (cur && cur.status === 'running') saveActive(cur);
     cur = null;
@@ -352,6 +366,7 @@
   }
   function finish() {
     const sess = cur;
+    keepAwake(false);
     clearInterval(tick); tick = null;
     S.tts.stop();
     const res = { sections: [], bySub: {}, correct: [], total: sess.q.length, b: 0, s: 0, k: 0 };
@@ -559,7 +574,7 @@
       saveActive(cur); renderExam();
     },
     'abandon-ask': () => modal(`<h3>Batalkan ujian?</h3><p>Semua jawaban pada sesi ini akan dihapus dan tidak masuk riwayat.</p><div class="modal-actions"><button type="button" class="btn btn-ghost" data-act="modal-close">Tidak jadi</button><button type="button" class="btn btn-danger" data-act="abandon">Ya, batalkan</button></div>`),
-    abandon: () => { S.closeModal(); clearInterval(tick); S.discardActive(); cur = null; document.body.classList.remove('in-exam', 'strict'); location.hash = '#beranda'; },
+    abandon: () => { S.closeModal(); keepAwake(false); clearInterval(tick); S.discardActive(); cur = null; document.body.classList.remove('in-exam', 'strict'); location.hash = '#beranda'; },
   };
   S.examKey = function (e) {
     if (!cur || cur.status !== 'running' || cur.paused || S.$('#modal:not([hidden])')) return false;
@@ -577,7 +592,7 @@
   };
   S.examBlur = function () {
     if (cur && cur.status === 'running' && cur.strict && document.visibilityState === 'hidden') { cur.blur++; saveActive(cur); }
-    else if (cur && cur.status === 'running' && document.visibilityState === 'visible') renderExam();
+    else if (cur && cur.status === 'running' && document.visibilityState === 'visible') { keepAwake(true); renderExam(); }
   };
 
   /* ---------------- text-to-speech untuk listening ---------------- */

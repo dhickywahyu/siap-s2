@@ -40,6 +40,20 @@
 - Pindah perangkat: buka Riwayat & progres → Salin cadangan, lalu tempel di perangkat lain.
 - Mode penyamaran (incognito) atau menghapus data situs akan menghapus progres.
 
+## Memakai di HP Android
+
+1. Buka situs Siap S2 (alamat GitHub Pages yang diawali https://) di **Google Chrome**.
+2. Ketuk tombol **Pasang di HP** di Beranda, atau menu **⋮ → Instal aplikasi / Tambahkan ke layar utama**.
+3. Buka dari ikon Siap S2 di layar utama. Aplikasi terbuka layar penuh seperti aplikasi biasa.
+4. Setelah dibuka sekali saat online, Siap S2 **tetap bisa dipakai tanpa internet**.
+
+Fitur khusus HP:
+- Navigasi bawah (Beranda, Simulasi, Latihan, English, Menu).
+- Tombol **Lembar jawaban** membuka LJK dari sisi kanan; ketuk nomor untuk melompat ke soal.
+- Layar tetap menyala selama ujian berlangsung.
+- Tombol **Back** Android tidak langsung mengeluarkanmu dari ujian; muncul konfirmasi dulu.
+- Listening memakai suara bawaan Android. Jika tidak ada suara, buka Setelan → Aksesibilitas/Bahasa → **Output text-to-speech**, lalu pasang data suara bahasa Inggris.
+
 ## Memakai tanpa internet
 
 Unduh atau clone repositori, lalu buka `index.html` langsung di browser. Semua fitur berjalan tanpa server. Tanpa internet, huruf akan memakai font cadangan sistem.
