@@ -57,11 +57,12 @@ Tidak perlu instalasi. Tanpa internet, huruf memakai font cadangan sistem.
 
 ## Menerbitkan di GitHub Pages
 
-Repositori ini sudah berisi workflow `.github/workflows/pages.yml`.
+1. Buka **Settings → Pages** di repositori ini.
+2. Pada **Build and deployment → Source**, pilih **Deploy from a branch**.
+3. Pilih branch **main** dan folder **/ (root)**, lalu **Save**.
+4. Tunggu 1–2 menit. Situs tersedia di https://dhickywahyu.github.io/siap-s2/
 
-1. Push ke branch `main`.
-2. Buka **Settings → Pages**, pilih **Source: GitHub Actions**.
-3. Setiap push akan menjalankan validasi bank soal dan uji otomatis, lalu menerbitkan situs.
+Setiap push ke `main` otomatis memperbarui situs. Workflow `.github/workflows/test.yml` menjalankan validasi bank soal dan uji otomatis pada setiap push dan pull request.
 
 ## Struktur folder
 

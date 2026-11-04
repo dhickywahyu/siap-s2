@@ -1,0 +1,28 @@
+name: Uji bank soal
+
+# Situs diterbitkan langsung dari branch main lewat GitHub Pages
+# (Settings → Pages → Deploy from a branch → main / root).
+# Workflow ini memastikan setiap perubahan soal tetap valid.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validasi bank soal & build data
+        run: node tools/build.js
+      - name: Uji otomatis
+        run: node tools/test.js
+      - name: Pastikan folder data/ sudah di-build ulang sebelum commit
+        run: git diff --exit-code -- data/bank.js data/vocab.js || (echo "Jalankan 'node tools/build.js' lalu commit folder data/." && exit 1)
