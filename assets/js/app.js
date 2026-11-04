@@ -475,9 +475,13 @@
     else window.scrollTo(0, 0);
     document.title = r === 'beranda' ? 'Siap S2' : `${(S.$(`[data-nav="${r}"]`) || {}).textContent || (r === 'ujian' ? 'Ujian' : 'Hasil')} · Siap S2`;
   };
+  const hostTheme = document.documentElement.getAttribute('data-theme'); // tema dari halaman induk (jika ada)
   function applyTheme() {
     const t = S.store.get('theme', 'system');
-    if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+    const root = document.documentElement;
+    if (t !== 'system') root.setAttribute('data-theme', t);
+    else if (hostTheme) root.setAttribute('data-theme', hostTheme);
+    else root.removeAttribute('data-theme');
     const b = S.$('#theme-btn'); if (b) b.textContent = t === 'system' ? 'Tema: sistem' : t === 'light' ? 'Tema: terang' : 'Tema: gelap';
   }
 
