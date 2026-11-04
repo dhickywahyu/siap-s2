@@ -360,6 +360,12 @@ body.strict .qpane, body.strict .passage { -webkit-user-select: none; user-selec
 .timeline li::before { content: ""; position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ljk); }
 .timeline b { font-family: var(--font-display); }
 
+.qstem .qtable { width: auto; min-width: min(100%, 360px); margin: 12px 0 6px; font: 500 0.95rem var(--font-ui); }
+.qstem .qtable th, .qstem .qtable td { padding: 6px 12px; text-align: right; border: 1px solid var(--line); }
+.qstem .qtable th:first-child, .qstem .qtable td:first-child { text-align: left; }
+.gap-form { display: grid; gap: 6px; margin-bottom: 12px; }
+.gap-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gap-row input { width: 160px; font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--line-strong); border-radius: 10px; padding: 8px 10px; }
 /* flashcard & wawancara */
 .fc-stats { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin-bottom: 14px; }
 .fc-stats label { margin-left: auto; display: flex; gap: 8px; align-items: center; font-weight: 500; }

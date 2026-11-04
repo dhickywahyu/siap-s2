@@ -29,6 +29,7 @@ Banyak pelamar gagal bukan karena kurang pintar, tetapi karena salah langkah adm
 - **Bahasa Inggris:** studi dalam negeri tidak wajib sertifikat untuk LPDP (laman skema SHARE 2026), tetapi kampus tetap mewajibkannya.
 - **Usia** dihitung per 31 Desember tahun pendaftaran.
 - **Prodi dan kampus tujuan** harus ada di daftar perguruan tinggi tujuan LPDP untuk skema yang kamu pilih.
+- **Hanya kelas reguler yang didanai.** Kelas eksekutif, karyawan, akhir pekan, jarak jauh, dan kelas di luar kampus induk tidak bisa dibiayai. Ini penting untuk pelamar MBA/MM: lihat halaman [Jalur MBA & Teknik](#jalur).
 - **Masa sanggah:** setelah pengumuman administrasi biasanya ada kesempatan sanggah. Manfaatkan hanya jika yakin dokumenmu benar.
 - **Kewajiban setelah lulus:** baca pedoman tentang kewajiban kembali dan berkontribusi di Indonesia sebelum mendaftar.
 

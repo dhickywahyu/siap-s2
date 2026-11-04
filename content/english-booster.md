@@ -17,6 +17,9 @@ Jika bahasa Inggris adalah titik lemahmu, prioritas utamanya adalah **kebiasaan 
 | ITB | ELPT ITB sesuai syarat (tercantum 77) |
 | Kampus lain / umum | TOEFL ITP 450–500 |
 
+> [!TIP]
+> Skor terakhirmu sekitar 430 dan targetmu MBA/MM/Magister Teknik? Ikuti rencana 90 menit per hari di halaman [Jalur MBA & Teknik](#jalur) dan hitung selisih skormu di sana.
+
 ETS memetakan skor TOEFL ITP ke level CEFR: sekitar 460 = B1 dan 543 = B2. Skor 500 berada di tengah level B1, yaitu sudah mampu memahami teks akademik sederhana.
 
 ### Jadwal 8 minggu

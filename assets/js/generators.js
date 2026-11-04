@@ -405,6 +405,89 @@
     return build(r, { c: K, s: 'geometri', l: 1, q: `Balok berukuran ${p} cm × ${l} cm × ${tg} cm. Volumenya adalah … cm³.`, e: `V = p × l × t = ${p} × ${l} × ${tg} = ${V} cm³.` }, V, [2 * (p * l + p * tg + l * tg), V + p, V - l, p + l + tg, V * 2]);
   });
 
+  /* =====================  KUANTITATIF BISNIS & DATA (MBA / MM)  ===================== */
+  const rj = (x) => 'Rp' + nf(Math.round(x * 100) / 100) + ' juta';
+  const pctLab = (v) => (v === 0 ? 'tetap' : v > 0 ? `naik ${nf(v)}%` : `turun ${nf(-v)}%`);
+  add('bisnis', (r) => { // titik impas
+    const c = r.int(2, 12) * 1000, V = r.int(3, 25) * 1000, Pr = V + c, u = r.int(12, 250) * 10, F = u * c;
+    const unit = (x) => nf(Math.round(x)) + ' unit';
+    return build(r, { c: K, s: 'bisnis', l: 2, q: `Sebuah usaha memiliki biaya tetap ${rp(F)} per bulan, harga jual ${rp(Pr)} per unit, dan biaya variabel ${rp(V)} per unit. Titik impas (BEP) usaha tersebut adalah …`,
+      e: `BEP (unit) = biaya tetap ÷ (harga − biaya variabel) = ${rp(F)} ÷ ${rp(c)} = ${nf(u)} unit. Selisih harga dan biaya variabel disebut margin kontribusi.` },
+      u, [F / Pr, F / V, u * 2, u / 2, u + 100, F / (Pr + V)], unit);
+  });
+  add('bisnis', (r) => { // markup vs margin
+    const m = r.pick([20, 25, 40, 50, 60, 100]), C0 = r.int(4, 40) * 5000, Pr = (C0 * (100 + m)) / 100;
+    const mg = Math.round((m / (100 + m)) * 1000) / 10;
+    const pc = (x) => nf(x) + '%';
+    return build(r, { c: K, s: 'bisnis', l: 2, q: `Sebuah produk berbiaya ${rp(C0)} dijual dengan markup ${m}% dari biaya, sehingga harganya ${rp(Pr)}. Margin keuntungan terhadap harga jual adalah …`,
+      e: `Untung = ${rp(Pr - C0)}. Margin = untung ÷ harga jual = ${rp(Pr - C0)} ÷ ${rp(Pr)} ≈ ${nf(mg)}%. Markup dihitung dari biaya, margin dari harga jual, sehingga margin selalu lebih kecil daripada markup.` },
+      mg, [m, m / 2, 100 - m, mg + 5, mg - 5, Math.round(m * 1.2)], pc);
+  });
+  add('bisnis', (r) => { // pertumbuhan dua periode
+    const R0 = r.int(4, 40) * 25, g1 = r.pick([10, 20, 25, 40, 50]), g2 = r.pick([-20, -10, 10, 20]);
+    const R2 = Math.round(R0 * (100 + g1) * (100 + g2)) / 10000;
+    const rm = (x) => 'Rp' + nf(Math.round(x * 100) / 100) + ' miliar';
+    const sg = (g) => (g >= 0 ? `naik ${g}%` : `turun ${-g}%`);
+    return build(r, { c: K, s: 'bisnis', l: 2, q: `Pendapatan sebuah perusahaan tahun 2024 sebesar ${rm(R0)}. Pada 2025 pendapatan ${sg(g1)}, lalu pada 2026 ${sg(g2)} dibanding 2025. Pendapatan 2026 adalah …`,
+      e: `Kalikan faktor pertumbuhan: ${nf(R0)} × ${nf(1 + g1 / 100)} × ${nf(1 + g2 / 100)} = ${nf(R2)}. Jebakan: menjumlahkan persentase (${g1 + g2}%) menghasilkan ${rm((R0 * (100 + g1 + g2)) / 100)}.` },
+      R2, [(R0 * (100 + g1 + g2)) / 100, (R0 * (100 + g1)) / 100, R2 + R0 / 10, R2 - R0 / 10, (R0 * (100 + g2)) / 100], rm);
+  });
+  add('bisnis', (r) => { // perubahan laba
+    for (let t = 0; t < 40; t++) {
+      const Rv = r.int(5, 20) * 100, Cs = Rv - r.int(1, 4) * 100, a = r.pick([5, 10, 20]), b = r.pick([5, 10, 15, 20]);
+      const p0 = Rv - Cs, p1 = (Rv * (100 + a) - Cs * (100 + b)) / 100;
+      if (p0 <= 0 || !Number.isInteger(p1) || p1 === p0) continue;
+      const raw = ((p1 - p0) / p0) * 100, ch = (Math.sign(raw) * Math.round(Math.abs(raw) * 10)) / 10;
+      return build(r, { c: K, s: 'bisnis', l: 3, q: `Tahun lalu pendapatan sebuah toko Rp${nf(Rv)} juta dan total biayanya Rp${nf(Cs)} juta. Tahun ini pendapatan naik ${a}% dan biaya naik ${b}%. Laba tahun ini dibanding tahun lalu …`,
+        e: `Laba lama = ${nf(Rv)} − ${nf(Cs)} = ${nf(p0)} juta. Laba baru = ${nf((Rv * (100 + a)) / 100)} − ${nf((Cs * (100 + b)) / 100)} = ${nf(p1)} juta. Perubahan = ${nf(p1 - p0)} ÷ ${nf(p0)} → ${pctLab(ch)}. Jebakan: ${a}% − ${b}% = ${a - b}%.` },
+        pctLab(ch), [pctLab(a - b), pctLab(a), pctLab(ch + 10), pctLab(ch - 10), pctLab(-ch), pctLab(ch * 2)], String);
+    }
+    throw new Error('retry');
+  });
+  add('bisnis', (r) => { // bunga majemuk
+    const M = r.int(1, 20) * 10, i = r.pick([5, 10, 20]);
+    const A = Math.round(M * (100 + i) * (100 + i)) / 10000;
+    return build(r, { c: K, s: 'bisnis', l: 2, q: `Investasi ${rj(M)} memberikan imbal hasil ${i}% per tahun yang diinvestasikan kembali (bunga majemuk). Nilai investasi setelah 2 tahun adalah …`,
+      e: `Bunga majemuk: M × (1 + i)² = ${nf(M)} × ${nf(1 + i / 100)}² ≈ ${nf(Math.round(A * 100) / 100)} juta. Dengan bunga tunggal hasilnya hanya ${rj((M * (100 + 2 * i)) / 100)}.` },
+      A, [(M * (100 + 2 * i)) / 100, (M * (100 + i)) / 100, A + M / 10, A - M / 20, (M * 2 * i) / 100], rj);
+  });
+  add('bisnis', (r) => { // rata-rata tertimbang
+    const w = r.pick([[50, 30, 20], [40, 35, 25], [30, 30, 40], [20, 30, 50], [40, 40, 20]]);
+    const sc = [r.int(60, 95), r.int(60, 95), r.int(60, 95)];
+    const v = (w[0] * sc[0] + w[1] * sc[1] + w[2] * sc[2]) / 100;
+    const mean = Math.round(((sc[0] + sc[1] + sc[2]) / 3) * 100) / 100;
+    return build(r, { c: K, s: 'bisnis', l: 1, q: `Seleksi kandidat manajer menilai tes tertulis ${w[0]}%, wawancara ${w[1]}%, dan presentasi kasus ${w[2]}%. Seorang kandidat memperoleh skor ${sc[0]}, ${sc[1]}, dan ${sc[2]}. Skor akhirnya adalah …`,
+      e: `Rata-rata tertimbang = ${w[0]}% × ${sc[0]} + ${w[1]}% × ${sc[1]} + ${w[2]}% × ${sc[2]} = ${nf(v)}. Rata-rata biasa (${nf(mean)}) salah karena bobotnya berbeda.` },
+      v, [mean, v + 1, v - 1, v + 2.5, v - 2.5, v + 4]);
+  });
+  add('bisnis', (r) => { // interpretasi tabel data
+    const names = r.shuffle(['Kopi', 'Teh', 'Cokelat', 'Jus', 'Susu', 'Roti']).slice(0, 3);
+    const data = names.map(() => { const row = [r.int(10, 40) * 10]; for (let k = 1; k < 4; k++) row.push(Math.max(40, row[k - 1] + r.int(-3, 7) * 10)); return row; });
+    const table = `<table class="qtable"><thead><tr><th>Produk</th><th>K1</th><th>K2</th><th>K3</th><th>K4</th></tr></thead><tbody>${names.map((n, i) => `<tr><td>${n}</td>${data[i].map((x) => `<td>${nf(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    const head = `Penjualan tiga produk sebuah kedai (unit) per kuartal tahun 2026:${table}`;
+    const t = r.int(0, 3);
+    const unit = (x) => nf(Math.round(x * 100) / 100) + ' unit';
+    const pc = (x) => nf(Math.round(x * 10) / 10) + '%';
+    if (t === 0) {
+      const tot = S.sum(data.map((d) => d[2]));
+      return build(r, { c: K, s: 'bisnis', l: 1, qh: 1, q: `${head}Total penjualan seluruh produk pada kuartal 3 (K3) adalah …`, e: `Jumlahkan kolom K3: ${data.map((d) => d[2]).join(' + ')} = ${nf(tot)} unit.` },
+        tot, [S.sum(data.map((d) => d[1])), S.sum(data.map((d) => d[3])), tot + 10, tot - 10, tot + 20], unit);
+    }
+    if (t === 1) {
+      const i = r.int(0, 2), g = ((data[i][3] - data[i][0]) / data[i][0]) * 100;
+      return build(r, { c: K, s: 'bisnis', l: 2, qh: 1, q: `${head}Persentase perubahan penjualan ${names[i]} dari K1 ke K4 adalah …`, e: `(K4 − K1) ÷ K1 = (${data[i][3]} − ${data[i][0]}) ÷ ${data[i][0]} ≈ ${pc(g)}. Bagilah dengan nilai awal (K1), bukan nilai akhir.` },
+        Math.round(g * 10) / 10, [((data[i][3] - data[i][0]) / data[i][3]) * 100, g + 10, g - 10, g + 5, data[i][3] - data[i][0]].map((x) => Math.round(x * 10) / 10), pc);
+    }
+    if (t === 2) {
+      const i = r.int(0, 2), m = S.sum(data[i]) / 4;
+      return build(r, { c: K, s: 'bisnis', l: 1, qh: 1, q: `${head}Rata-rata penjualan ${names[i]} per kuartal adalah …`, e: `(${data[i].join(' + ')}) ÷ 4 = ${nf(m)} unit.` },
+        m, [S.sum(data[i]) / 3, (data[i][0] + data[i][3]) / 2, m + 10, m - 10, m + 5], unit);
+    }
+    const i = r.int(0, 2), tot4 = S.sum(data.map((d) => d[3])), sh = (data[i][3] / tot4) * 100;
+    return build(r, { c: K, s: 'bisnis', l: 2, qh: 1, q: `${head}Pangsa penjualan ${names[i]} terhadap total penjualan K4 adalah …`, e: `${data[i][3]} ÷ ${tot4} × 100% ≈ ${pc(sh)}.` },
+      Math.round(sh * 10) / 10, [100 / 3, (data[i][0] / S.sum(data.map((d) => d[0]))) * 100, sh + 5, sh - 5, sh + 10].map((x) => Math.round(x * 10) / 10), pc);
+  });
+
   /* =====================  PELUANG & KOMBINATORIK  ===================== */
   add('peluang', (r) => {
     const t = r.int(0, 5);

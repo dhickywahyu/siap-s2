@@ -71,7 +71,7 @@
           <p class="target-label">Hari menuju ujian</p>
           <div class="ljk-digits" aria-label="${days != null && days >= 0 ? days + ' hari lagi' : 'Tanggal belum diatur'}">${digits.map((d) => `<span class="cell"><b>${d}</b>${'0123456789'.split('').map((x) => `<i class="${x === d ? 'on' : ''}"></i>`).join('')}</span>`).join('')}</div>
           <label for="tg-name">Target</label>
-          <select id="tg-name" name="target">${['', 'LPDP + SIMAK UI', 'LPDP + UGM (PAPs & AcEPT)', 'LPDP + ITB (UPDA & ELPT)', 'SIMAK UI', 'Pascasarjana UGM', 'Pascasarjana ITB', 'Tes Bakat Skolastik LPDP'].map((t) => `<option ${t === prof.target ? 'selected' : ''} value="${S.esc(t)}">${t || 'Pilih target…'}</option>`).join('')}</select>
+          <select id="tg-name" name="target">${['', 'LPDP + MM FEB UI (SIMAK)', 'LPDP + MBA FEB UGM', 'LPDP + MBA/MSM SBM ITB', 'LPDP + Magister Teknik & Manajemen Industri ITB', 'LPDP + Magister Teknik Industri UI', 'LPDP + Magister Teknik UGM', 'LPDP + SIMAK UI', 'LPDP + UGM (PAPs & AcEPT)', 'LPDP + ITB (UPDA & ELPT)', 'SIMAK UI', 'Pascasarjana UGM', 'Pascasarjana ITB', 'Tes Bakat Skolastik LPDP'].map((t) => `<option ${t === prof.target ? 'selected' : ''} value="${S.esc(t)}">${t || 'Pilih target…'}</option>`).join('')}</select>
           <label for="tg-date">Tanggal ujian / seleksi</label>
           <input id="tg-date" name="date" type="date" value="${S.esc(prof.date)}">
           <button class="btn btn-small" type="submit">Simpan target</button>
@@ -103,6 +103,7 @@
           <ol class="todo">
             ${weakest ? `<li>Topik terlemahmu <b>${S.esc(S.subLabel(weakest.s))}</b> (${Math.round(weakest.p * 100)}%). <button type="button" class="linklike" data-act="drill" data-sub="${weakest.s}">Latih 15 soal</button></li>` : `<li>Kerjakan satu <a href="#simulasi">simulasi mini</a> untuk mengukur kemampuan awal.</li>`}
             <li>${srsDue ? `<b>${srsDue}</b> kartu kosakata menunggu.` : 'Kosakata baru siap dipelajari.'} <a href="#english" data-act="tab-english" data-tab="flash">Buka flashcard</a></li>
+            ${/MBA|MM |Manajemen|Teknik/.test(prof.target) ? `<li>Target ${S.esc(prof.target.replace('LPDP + ', ''))}: buka <a href="#jalur">Jalur MBA & Teknik</a> untuk syarat, selisih skor bahasa Inggris, dan rencana 12 minggu.</li>` : ''}
             <li>Baca satu teknik di <a href="#strategi">Strategi & rumus cepat</a>, lalu langsung coba latihan kilatnya.</li>
           </ol>
         </div>
@@ -198,6 +199,7 @@
   P.beasiswa = () => { view().innerHTML = mdPage('tips-beasiswa', { route: 'beasiswa' }); };
   P.penting = () => { view().innerHTML = mdPage('hal-penting', { route: 'penting' }); };
   P.panduan = () => { view().innerHTML = mdPage('panduan', { route: 'panduan' }); };
+  P.jalur = () => { view().innerHTML = mdPage('jalur-mba-teknik', { route: 'jalur' }); };
 
   P.riwayat = () => {
     const hist = S.history();
@@ -265,6 +267,26 @@
     const st = S.store.get('checklist', {});
     el.innerHTML = S.CHECKLIST.map((g, gi) => `<div class="check-group"><h4>${S.esc(g.g)}</h4>${g.items.map((it, ii) => { const id = `c${gi}-${ii}`; return `<label class="check-item"><input type="checkbox" id="${id}" data-act="check" data-id="${id}" ${st[id] ? 'checked' : ''}><span>${S.esc(it)}</span></label>`; }).join('')}</div>`).join('') +
       `<p class="muted small">${Object.values(st).filter(Boolean).length} dari ${S.sum(S.CHECKLIST.map((g) => g.items.length))} selesai · tersimpan di browser ini.</p>`;
+  };
+  const ENG_TARGETS = [
+    ['MBA FEB UGM (Reguler)', 475, 'TOEFL ITP 475 · AcEPT 216 · IELTS 5.0'],
+    ['Patokan aman umum (ITB, Magister Teknik UGM)', 500, 'ITB memakai ELPT ITB (skala sendiri); 500 setara ITP sebagai patokan'],
+    ['International MBA FEB UGM', 525, 'TOEFL ITP 525 · AcEPT 276 · IELTS 6.0'],
+    ['Magister Manajemen FEB UI', 550, 'Diuji di SIMAK; laman FEB menyebut 500–550 (pakai 550 agar aman)'],
+  ];
+  W['skor-gap'] = (el) => {
+    const prof = S.store.get('profile', {});
+    const sc = +prof.eng || null;
+    el.innerHTML = `<div class="gap">
+      <form class="gap-form" id="gap-form">
+        <label for="eng-score">Skor terakhir (TOEFL ITP, ProTEFL, atau tes setara, skala 310–677)</label>
+        <div class="gap-row"><input id="eng-score" name="eng" type="number" min="310" max="677" inputmode="numeric" placeholder="misalnya 427" value="${sc || ''}"><button class="btn btn-primary btn-small" type="submit">Hitung selisih</button></div>
+      </form>
+      ${sc ? `<div class="table-wrap"><table><thead><tr><th>Target</th><th>Syarat</th><th>Selisih</th><th>Perkiraan latihan</th></tr></thead><tbody>
+        ${ENG_TARGETS.map(([n, t, d]) => { const g = t - sc; return `<tr><td>${S.esc(n)}<br><span class="muted small">${S.esc(d)}</span></td><td>${t}</td><td><span class="pill ${g <= 0 ? 'ok' : g <= 50 ? 'mid' : 'bad'}">${g <= 0 ? 'terpenuhi' : '+' + g}</span></td><td class="small">${g <= 0 ? 'Pertahankan, naikkan lagi untuk bersaing' : `±${Math.ceil(g / 10)}–${Math.ceil(g / 5)} minggu`}</td></tr>`; }).join('')}
+      </tbody></table></div>
+      <p class="muted small">Perkiraan kasar dengan asumsi kenaikan 5–10 poin per minggu bila berlatih 60–90 menit setiap hari. Hasil tiap orang berbeda; pantau lewat simulasi mini ELPT/TOEFL ITP setiap 2 minggu.</p>` : '<p class="muted small">Masukkan skor untuk melihat selisih terhadap syarat program.</p>'}
+    </div>`;
   };
   W.timeline = (el) => { el.innerHTML = `<ol class="timeline">${S.TIMELINE.map(([t, d]) => `<li><b>${S.esc(t)}</b><span>${S.esc(d)}</span></li>`).join('')}</ol>`; };
 
@@ -509,10 +531,18 @@
       if (e.target.dataset.actChange === 'srs-limit') { S.store.set('srsLimit', +e.target.value); remount('flashcards'); }
     });
     document.addEventListener('submit', (e) => {
+      if (e.target.id === 'gap-form') {
+        e.preventDefault();
+        const v = Math.round(+new FormData(e.target).get('eng'));
+        if (!(v >= 310 && v <= 677)) { S.toast('Masukkan skor antara 310 dan 677.', 'warn'); return; }
+        const prof = S.store.get('profile', {}); prof.eng = v; S.store.set('profile', prof);
+        remount('skor-gap');
+        return;
+      }
       if (e.target.id === 'target-form') {
         e.preventDefault();
         const f = new FormData(e.target);
-        S.store.set('profile', { target: f.get('target') || '', date: f.get('date') || '' });
+        S.store.set('profile', Object.assign(S.store.get('profile', {}), { target: f.get('target') || '', date: f.get('date') || '' }));
         S.toast('Target disimpan.');
         P.beranda();
       }

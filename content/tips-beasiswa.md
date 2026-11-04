@@ -36,6 +36,7 @@ Panduan praktis untuk lolos seleksi pascasarjana UI, UGM, ITB, dan beasiswa LPDP
 | IPK | Umumnya minimal 3,00 (skala 4) untuk S2 |
 | Bahasa Inggris | Laman skema SHARE 2026: pendaftar dalam negeri **tidak wajib** sertifikat bahasa Inggris. Tetapi kampus tujuan tetap mensyaratkannya untuk penerimaan |
 | Kampus tujuan | Harus termasuk daftar perguruan tinggi tujuan LPDP untuk skema yang dipilih |
+| Jenis kelas | **Hanya kelas reguler.** Tidak didanai: kelas eksekutif, khusus, karyawan, akhir pekan, jarak jauh, kelas di luar kampus induk, dan kelas internasional tertentu |
 | Skema | 2026 mengenal skema STEM dan SHARE, jalur afirmasi, dan jalur lain; setiap skema punya syarat dan kuota sendiri |
 | Dokumen | Esai, surat rekomendasi, surat pernyataan, ijazah dan transkrip, identitas, LoA (bila ada). Ikuti template resmi |
 | Penerima beasiswa lain | Umumnya tidak boleh sedang menerima beasiswa lain untuk jenjang yang sama (cek ketentuan) |

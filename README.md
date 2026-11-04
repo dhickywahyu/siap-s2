@@ -20,6 +20,7 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 | **Strategi & rumus cepat** | Teknik verbal, 8 pola deret, rumus soal cerita, tabel logika, strategi menebak +4/−1. |
 | **English Booster** | Rencana 8 minggu, flashcard dengan pengulangan berjarak (Leitner), 25 aturan grammar, listening dengan suara browser, catatan soal salah. |
 | **Beasiswa & aturan** | Syarat UI/UGM/ITB, aturan LPDP, kerangka esai, latihan wawancara bertimer (28 pertanyaan), LGD, esai on the spot, checklist dokumen. |
+| **Jalur MBA & Teknik** | Syarat MM FEB UI, MBA/IMBA FEB UGM, MBA/MSM SBM ITB, MTMI ITB, Magister Teknik Industri UI, MeTSi UGM; aturan kelas reguler LPDP; kalkulator selisih skor bahasa Inggris; rencana 12 minggu; soal kuantitatif bisnis & data (BEP, markup vs margin, pertumbuhan, tabel). |
 | **Analisis soal** | Format tiap tes dan perubahannya dari tahun ke tahun, peta topik, jatah waktu per soal, beserta sumbernya. |
 | **Riwayat & progres** | Grafik skor, akurasi per topik, cadangan data untuk pindah perangkat. |
 
@@ -30,7 +31,7 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 ## Cara memakai
 
 ### Online (paling mudah untuk teman-teman)
-Buka tautan GitHub Pages repositori ini: `https://<username-github>.github.io/siap-s2/`. Progres tiap orang tersimpan di browser masing-masing.
+Buka https://dhickywahyu.github.io/siap-s2/ (setelah GitHub Pages aktif). Progres tiap orang tersimpan di browser masing-masing.
 
 ### Offline
 1. Klik **Code → Download ZIP**, lalu ekstrak.
@@ -84,6 +85,7 @@ siap-s2/
 - [Strategi & rumus cepat](content/strategi-rumus.md)
 - [Beasiswa & aturan masuk S2](content/tips-beasiswa.md)
 - [Hal penting yang sering terlewat](content/hal-penting.md)
+- [Jalur MBA, Magister Manajemen & Magister Teknik](content/jalur-mba-teknik.md)
 - [English Booster](content/english-booster.md) dan [25 aturan grammar](content/english-grammar.md)
 - [Panduan memakai aplikasi](content/panduan.md)
 
