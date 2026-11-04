@@ -1,0 +1,11 @@
+{
+  "name": "siap-s2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulasi tes masuk S2 UI, UGM, ITB dan Tes Bakat Skolastik LPDP",
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node tools/build.js && node tools/test.js"
+  },
+  "license": "MIT"
+}
