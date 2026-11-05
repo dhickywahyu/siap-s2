@@ -59,7 +59,9 @@ for (const f of files) {
   const prefix = mod.prefix || path.basename(f, '.js');
   for (const [pid, p] of Object.entries(mod.passages || {})) {
     if (passages[pid]) errors.push(`${f}: passage ${pid} duplikat`);
-    if (!p.t || !p.x) errors.push(`${f}: passage ${pid} wajib punya t (judul) dan x (teks)`);
+    // Bacaan tertulis memakai x (teks); audio panjang (listening Part B/C) memakai au: [['W'|'M'|'N', kalimat], ...]
+    const okAudio = Array.isArray(p.au) && p.au.length >= 2 && p.au.every((l) => Array.isArray(l) && /^[WMN]$/.test(l[0]) && typeof l[1] === 'string' && l[1].trim());
+    if (!p.t || !(p.x || okAudio)) errors.push(`${f}: passage ${pid} wajib punya t (judul) dan x (teks) atau au (skrip audio)`);
     passages[pid] = p;
   }
   const counters = {};

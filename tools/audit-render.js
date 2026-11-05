@@ -31,7 +31,10 @@ B.items.forEach((it) => {
   it.o.forEach((o, j) => check(`${it.i} opsi ${j}`, it.h ? o : S.rich(o)));
   check(it.i + ' pembahasan', S.rich(S.dec(it.k).e || ''));
 });
-Object.entries(B.passages || {}).forEach(([id, p]) => check('bacaan ' + id, S.rich(p.x)));
+Object.entries(B.passages || {}).forEach(([id, p]) => {
+  if (p.au) p.au.forEach(([, t], j) => check(`audio ${id} baris ${j}`, S.esc(t)));
+  else check('bacaan ' + id, S.rich(p.x));
+});
 
 let n = 0;
 for (const sub of Object.keys(S.GEN)) {

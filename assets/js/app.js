@@ -717,7 +717,7 @@
     if (!out.length) { el.innerHTML = '<p class="muted">Belum ada catatan. Soal bahasa Inggris yang salah atau kosong dari simulasi dan latihan akan terkumpul di sini sebagai bahan ulangan.</p>'; return; }
     el.innerHTML = `<p class="small">${out.length} soal bahasa Inggris terakhir yang salah/kosong. Baca pembahasannya, lalu ulangi sebagai latihan.</p>
       <div class="btn-row"><button type="button" class="btn btn-primary" data-act="retry-english">Ulangi semua sebagai latihan</button></div>
-      ${out.map((x) => `<article class="rev bad"><div class="rev-head"><span class="muted small">${S.esc(S.subLabel(x.q.s))} · ${S.fmtDate(x.date)}</span></div><div class="qstem en">${x.q.qh || x.q.gen ? x.q.q : S.rich(x.q.q)}</div>
+      ${out.map((x) => `<article class="rev bad"><div class="rev-head"><span class="muted small">${S.esc(S.subLabel(x.q.s))} · ${S.fmtDate(x.date)}</span></div>${(() => { const pa = x.q.p && S.passage(x.q.p); const au = x.q.au || (pa && pa.au); return au ? `<details class="rev-passage"><summary>Transkrip audio${pa && pa.t ? ': ' + S.esc(pa.t) : ''}</summary><div class="transcript">${au.map(([w, t]) => `<p><b>${w === 'M' ? 'Man' : w === 'W' ? 'Woman' : 'Narrator'}:</b> ${S.esc(t)}</p>`).join('')}</div></details>` : pa && pa.x ? `<details class="rev-passage"><summary>Bacaan: ${S.esc(pa.t)}</summary><div class="passage-text">${S.rich(pa.x)}</div></details>` : ''; })()}<div class="qstem en">${x.q.qh || x.q.gen ? x.q.q : S.rich(x.q.q)}</div>
         <p class="small">Jawabanmu: <b>${x.a == null ? 'kosong' : LET[x.a] + '. ' + S.esc(x.q.o[x.a].replace(/<[^>]+>/g, ''))}</b> · Kunci: <b>${LET[x.key.a]}. ${S.esc(String(x.q.o[x.key.a]).replace(/<[^>]+>/g, ''))}</b></p>
         <div class="explain">${S.rich(x.key.e)}</div></article>`).join('')}`;
     S._retryEnglish = out.map((x) => x.q);
@@ -785,6 +785,7 @@
       if (!t) { rFilter = 'all'; P.hasil(); t = S.$('#rev-' + el.dataset.i); }
       t && t.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
+    'replay-p': (el) => { const p = S.passage(el.dataset.p); if (p && p.au) S.tts.speak(p.au, 1); },
     replay: (el) => { const s = S.loadSession(S.store.get('viewResult', '')); const q = s && s.q[+el.dataset.i]; if (q && q.au) S.tts.speak([...q.au, ['N', q.q.replace(/<[^>]+>/g, ' ')]], 1); },
     'open-result': (el) => { S.store.set('viewResult', el.dataset.id); rFilter = 'all'; location.hash = '#hasil'; },
     toc: (el, e) => { const t = document.getElementById(el.dataset.id); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); },

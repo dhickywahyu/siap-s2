@@ -29,17 +29,22 @@
     const pool = levelPool((BY_SUB[sub] || []).filter((x) => !excl.has(x.i)), minL);
     if (!pool.length || n <= 0) return [];
     if (pool.some((x) => x.p)) {
-      const groups = S.groupBy(pool, 'p');
+      // Satuan pengambilan: satu kelompok bacaan/audio panjang, atau satu soal lepas.
+      const groups = Object.values(S.groupBy(pool.filter((x) => x.p), 'p'));
+      const units = [...groups, ...pool.filter((x) => !x.p).map((x) => [x])];
       const score = (g) => S.sum(g.map((x) => seenOf(x.i))) / g.length;
-      const keys = r.shuffle(Object.keys(groups)).sort((a, b) => score(groups[a]) - score(groups[b]));
-      const out = [];
-      for (const k of keys) {
-        if (out.length >= n) break;
-        const g = groups[k];
-        const room = n - out.length;
-        out.push(...(g.length <= room + 1 ? g : g.slice(0, room)));
+      const order = r.shuffle(units).sort((a, b) => score(a) - score(b));
+      const singles = [], grouped = [];
+      let count = 0;
+      for (const g of order) {
+        if (count >= n) break;
+        const room = n - count;
+        const take = g.length <= room + 1 ? g : g.slice(0, room);
+        (g[0].p ? grouped : singles).push(...take);
+        count += take.length;
       }
-      return out;
+      // Seperti TOEFL: soal pendek dulu, lalu percakapan/bacaan panjang berkelompok.
+      return [...singles, ...grouped];
     }
     return r.shuffle(pool).sort((a, b) => seenOf(a.i) - seenOf(b.i)).slice(0, n);
   }
@@ -256,6 +261,22 @@
       ${cur.audioLimit ? `<span class="muted small">Seperti tes asli, audio hanya bisa diputar ${cur.audioLimit}×.</span>` : `<label class="small">Kecepatan <select id="tts-rate"><option value="0.8">0,8×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option></select></label>`}
     </div>`;
   }
+  /** Audio panjang (percakapan/kuliah) dipakai bersama oleh beberapa soal dan dihitung per kelompok. */
+  function audioPassageHtml(pid, pas) {
+    const sess = cur;
+    const idx = sess.q.map((x, k) => (x.p === pid ? k + 1 : 0)).filter(Boolean);
+    const range = idx.length > 1 ? `soal ${idx[0]}–${idx[idx.length - 1]}` : `soal ${idx[0]}`;
+    if (!S.tts.ok) {
+      return `<div class="audio-box audio-long"><p class="muted">Browser ini tidak mendukung suara. Baca transkrip berikut sebagai pengganti audio untuk ${range}:</p>${transcript(pas)}</div>`;
+    }
+    const n = (sess.pplays || {})[pid] || 0;
+    const limited = sess.audioLimit && n >= sess.audioLimit;
+    return `<div class="audio-box audio-long">
+      <div class="audio-long-info"><b>${S.esc(pas.t)}</b><span class="muted small">Audio panjang untuk ${range}. ${sess.audioLimit ? 'Diputar <b>sekali</b> untuk semua soal di kelompok ini, jadi baca dulu pertanyaannya lalu catat poin penting sambil mendengarkan.' : 'Saat latihan boleh diputar ulang.'}</span></div>
+      <button type="button" class="btn btn-audio" data-act="play" ${limited ? 'disabled' : ''}>${limited ? 'Audio sudah diputar' : n ? 'Putar lagi' : 'Putar audio'}</button>
+      ${sess.audioLimit ? '' : '<label class="small">Kecepatan <select id="tts-rate"><option value="0.8">0,8×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option></select></label>'}
+    </div>`;
+  }
   const transcript = (q) => `<div class="transcript">${q.au.map(([w, t]) => `<p><b>${w === 'M' ? 'Man' : w === 'W' ? 'Woman' : 'Narrator'}:</b> ${S.esc(t)}</p>`).join('')}</div>`;
 
   function ljkRows(sess, from, to, mode, res) {
@@ -310,11 +331,11 @@
       ${secTabs}
       ${sess.blur && sess.strict ? `<div class="proctor-warn" role="alert">Kamu meninggalkan halaman ujian ${sess.blur}×. Pada ujian daring berpengawas (proctoring), berpindah tab dapat dianggap pelanggaran.</div>` : ''}
       ${sess.paused ? `<div class="paused"><p>Latihan dijeda. Soal disembunyikan.</p><button type="button" class="btn btn-primary" data-act="pause">Lanjutkan latihan</button></div>` : `
-      <div class="exam-body${pas ? ' has-passage' : ''}">
-        ${pas ? `<article class="passage" aria-label="Bacaan"><h3>${S.esc(pas.t)}</h3><div class="passage-text">${S.rich(pas.x)}</div></article>` : ''}
+      <div class="exam-body${pas && !pas.au ? ' has-passage' : ''}">
+        ${pas && !pas.au ? `<article class="passage" aria-label="Bacaan"><h3>${S.esc(pas.t)}</h3><div class="passage-text">${S.rich(pas.x)}</div></article>` : ''}
         <section class="qpane" aria-label="Soal">
           <div class="qmeta"><span class="qno">Soal ${i + 1}</span><span>${S.esc(S.subLabel(q.s))}</span><span class="lv lv-${q.l || 2}">${S.LEVELS[q.l || 2]}</span>${q.gen ? '<span class="tag">variasi otomatis</span>' : ''}</div>
-          ${audioHtml(q, i)}
+          ${pas && pas.au ? audioPassageHtml(q.p, pas) : audioHtml(q, i)}
           <div class="qstem ${q.c === 'english' ? 'en' : ''}">${stemHtml(q)}</div>
           <div class="opts${q.h ? ' opts-fig' : ''}" role="radiogroup" aria-label="Pilihan jawaban">${q.o.map((_, j) => optHtml(q, j, sess.ans[i])).join('')}</div>
           <nav class="qnav">
@@ -358,6 +379,18 @@
   }
   function play() {
     const sess = cur, i = sess.cur, q = sess.q[i];
+    const pas = q.p ? S.passage(q.p) : null;
+    if (pas && pas.au) {
+      sess.pplays = sess.pplays || {};
+      if (sess.audioLimit && (sess.pplays[q.p] || 0) >= sess.audioLimit) return;
+      sess.pplays[q.p] = (sess.pplays[q.p] || 0) + 1;
+      saveActive(sess);
+      const rateEl2 = S.$('#tts-rate');
+      const b2 = S.$('[data-act="play"]');
+      if (b2) { b2.disabled = true; b2.textContent = 'Memutar…'; }
+      S.tts.speak(pas.au, rateEl2 ? +rateEl2.value : 1, () => { if (cur === sess) renderExam(); });
+      return;
+    }
     if (sess.audioLimit && sess.plays[i] >= sess.audioLimit) return;
     sess.plays[i]++;
     saveActive(sess);
@@ -597,7 +630,9 @@
       const c = res.correct[i];
       const pas = q.p && q.p !== lastP ? S.passage(q.p) : null;
       lastP = q.p || null;
-      return `${pas ? `<details class="rev-passage"><summary>Bacaan: ${S.esc(pas.t)}</summary><div class="passage-text">${S.rich(pas.x)}</div></details>` : ''}
+      return `${pas ? (pas.au
+        ? `<details class="rev-passage" open><summary>Transkrip audio: ${S.esc(pas.t)}</summary>${S.tts.ok ? `<button type="button" class="btn btn-small" data-act="replay-p" data-p="${S.esc(q.p)}">Putar ulang audio</button>` : ''}${transcript(pas)}</details>`
+        : `<details class="rev-passage"><summary>Bacaan: ${S.esc(pas.t)}</summary><div class="passage-text">${S.rich(pas.x)}</div></details>`) : ''}
       <article class="rev ${c === true ? 'ok' : c === false ? 'bad' : 'blank'}" id="rev-${i}">
         <div class="rev-head"><span class="qno">${i + 1}</span><span class="rev-state">${c === true ? 'Benar' : c === false ? 'Salah' : 'Kosong'}</span><span class="lv lv-${q.l || 2}">${S.LEVELS[q.l || 2]}</span><span class="muted small">${S.esc(S.subLabel(q.s))} · ${sess.spent[i] || 0} dtk${sess.flag[i] ? ' · ragu-ragu' : ''}</span></div>
         ${q.au ? `<div class="audio-box">${S.tts.ok ? '<button type="button" class="btn btn-small" data-act="replay" data-i="' + i + '">Putar ulang audio</button>' : ''}${transcript(q)}</div>` : ''}

@@ -2,7 +2,7 @@
  * Strategi: network-first dengan batas waktu. Saat online selalu memakai versi terbaru;
  * saat offline atau sinyal lemah, memakai salinan yang tersimpan di HP.
  */
-const CACHE = 'siap-s2-v2';
+const CACHE = 'siap-s2-v3';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
   './assets/css/app.css',

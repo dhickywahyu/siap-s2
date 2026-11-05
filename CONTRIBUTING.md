@@ -56,8 +56,14 @@ Tandai empat bagian bergaris bawah dengan `[A|...]` sampai `[D|...]` secara beru
 ```js
 passages: {
   EN09: { t: 'Judul bacaan', x: 'Paragraf pertama.\n\nParagraf kedua.' },
+  // Audio panjang (listening Part B/C): pakai au, bukan x. Diputar sekali untuk semua soal yang memakai p yang sama.
+  LB99: { t: 'Conversation: two students', au: [['N', 'Listen to a conversation between two students.'], ['W', '…'], ['M', '…']] },
 },
 ```
+
+### Soal berbasis skenario (kunci dihitung)
+
+File `bank/kuantitatif-banyak.js` dan `bank/penalaran-banyak.js` menunjukkan pola menulis banyak soal dari skenario: tulis konteks dan angkanya, lalu biarkan kode menghitung kunci dan pengecoh dari kesalahan yang umum. Pola ini cocok untuk soal hitungan dan logika formal agar tidak ada salah kunci.
 
 ### Kosakata (`bank/vocab.js`)
 

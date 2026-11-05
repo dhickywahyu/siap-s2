@@ -17,6 +17,7 @@
 - Kunci jawaban dan pembahasan **baru terbuka setelah jawaban dikumpulkan**. Selama ujian, kunci tersimpan dalam bentuk terenkode dan tidak ditampilkan.
 - Berpindah tab atau aplikasi dicatat sebagai "keluar halaman", meniru pengawasan ujian daring.
 - Soal listening dibacakan oleh fitur suara browser (text-to-speech) dan hanya bisa diputar sekali dalam mode simulasi.
+- Listening punya tiga jenis seperti TOEFL ITP: dialog pendek (Part A), percakapan panjang (Part B), dan kuliah atau pengumuman (Part C). Untuk Part B dan C, satu audio dipakai untuk beberapa soal sekaligus: baca dulu pertanyaannya, lalu catat poin penting saat audio diputar, karena audio tidak diulang.
 
 ## Pintasan keyboard saat ujian
 
@@ -29,7 +30,7 @@
 
 ## Tentang soal
 
-- **Soal tertulis** disusun orisinal mengikuti gaya dan kisi-kisi tes asli, lengkap dengan pembahasan.
+- **Bank soal** berisi lebih dari 3.000 soal dengan pembahasan, disusun orisinal mengikuti gaya dan kisi-kisi tes asli. Sebagian soal kuantitatif dan logika ditulis sebagai skenario yang kuncinya dihitung program, sehingga bebas salah hitung.
 - **Variasi otomatis** untuk deret, aritmetika, soal cerita, peluang, perbandingan kuantitatif, silogisme, ingkaran, urutan, figural, dan vocabulary dibuat oleh generator. Kuncinya dihitung oleh program, jadi soalnya tidak pernah habis.
 - Aplikasi memprioritaskan soal yang paling jarang kamu lihat agar latihan tidak berulang.
 - Setiap soal punya **tingkat kesulitan**: Mudah, Sedang, Sulit, Sangat sulit. Labelnya terlihat di samping nomor soal dan di pembahasan.

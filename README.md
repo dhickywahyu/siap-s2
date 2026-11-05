@@ -11,7 +11,8 @@ Dibuat untuk belajar mandiri dan bersama teman. Gratis, tanpa akun, tanpa server
 | Fitur | Keterangan |
 |---|---|
 | **7 simulasi ujian** | SIMAK UI Magister, PAPs UGM, AcEPT UGM, UPDA ITB, TPA Bappenas, Tes Bakat Skolastik LPDP, ELPT ITB / TOEFL ITP. Versi penuh dan mini (±⅓ durasi). |
-| **Bank soal** | 970 soal tertulis + 277 kosakata, semuanya dengan pembahasan: 182 mudah, 406 sedang, 241 sulit, 141 sangat sulit. |
+| **Bank soal** | **3.036 soal** + 277 kosakata, semuanya dengan pembahasan: 312 mudah, 943 sedang, 1.074 sulit, 707 sangat sulit. Bahasa Inggris 1.132 (termasuk 170 listening dan 197 composing), verbal 1.119, kuantitatif 445, penalaran 340. |
+| **Listening ala TOEFL** | Part A (dialog pendek dengan idiom, makna tersirat, sindiran), Part B (10 percakapan panjang), dan Part C (10 kuliah/pengumuman akademik). Audio panjang diputar sekali untuk satu kelompok 4 soal; transkrip baru terbuka di pembahasan. |
 | **Tingkat kesulitan** | Pilih *Campuran (seperti tes asli)*, *Sulit ke atas*, atau *Sangat sulit* di latihan maupun simulasi. Generator juga punya varian sulit: deret bertingkat, sisa pembagian pangkat, campuran larutan, NPV, teka-teki 6 orang, silogisme tiga premis, dan lainnya. |
 | **Variasi otomatis** | Generator untuk deret angka/huruf, aritmetika, operasi, aljabar, soal cerita, geometri, statistika, peluang, perbandingan kuantitatif, silogisme, ingkaran, urutan, figural, dan vocabulary. Kunci dihitung program, jadi soal tidak pernah habis. |
 | **Kunci terkunci** | Kunci jawaban dan pembahasan disimpan terenkode dan baru didekode setelah sesi selesai. |
